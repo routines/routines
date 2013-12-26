@@ -217,6 +217,45 @@
 
     
     ///
+    /// Channel coordination
+    ///
+
+    function select(cases) {
+        var done = new Channel(),
+            remaining = cases.length,
+            promise;
+
+        promise = new Promise((resolve) => {
+
+            cases.forEach(function(item) {
+                go(function* () {
+                    var channel = item.channel,
+                        response = item.response,
+                        data;
+                    
+                    data = yield channel.receive();
+                    response(data);
+                    done.send(true);
+                });
+            });
+
+
+            go(function* () {
+                while (remaining > 0) {
+                    yield done.receive();
+                    remaining = remaining - 1;
+                    console.log(remaining);
+                }
+                resolve(true);
+            });
+        });
+
+        return promise;
+    }
+
+
+    
+    ///
     /// Exports
     ///
     
@@ -232,7 +271,10 @@
 
         // Channel transformers
         unique: unique,
-        pace: pace
+        pace: pace,
+
+        // Channel coordination
+        select: select
         
     };    
 
