@@ -1,0 +1,22 @@
+#out {
+    border: 1px solid #ccc;
+    background: #efefef;
+    font-family: Helvetica;
+    font-size: 12px;
+    line-height: 1.3em;
+    height: 13em;
+    width: 100px;
+    padding: 1em;
+}
+
+.proc-1 {
+    color: #ff6666;
+}
+
+.proc-2 {
+    color: #66ff66
+}
+
+.proc-3 {
+    color: #6666ff;
+}
