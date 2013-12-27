@@ -21,7 +21,7 @@
     go(function* () {
         while (true) {
             yield timeout(250).receive();
-            channel.send(1);
+            yield channel.put(1);
         }
     });
 
@@ -29,7 +29,7 @@
     go(function* () {
         while (true) {
             yield timeout(1000).receive();
-            channel.send(2);
+            yield channel.put(2);
         }
     });
 
@@ -38,7 +38,7 @@
     go(function* () {
         while (true) {
             yield timeout(1500).receive();
-            channel.send(3);
+            yield channel.put(3);
         }
     });
 

@@ -115,9 +115,6 @@
             };
         }
 
-        send(message) {
-            this.put(message)();
-        }
     }
 
 
