@@ -253,7 +253,7 @@
                     
                     data = yield channel.receive();
                     response(data);
-                    done.send(true);
+                    yield done.put(true);
                 });
             });
 

@@ -14,9 +14,10 @@
         
         var [ sortedNumbers, sortTime ] = yield sorted.receive();        
 
-        log.send('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
-        log.send('first: ' + sortedNumbers[0]);
-        log.send('last: ' + sortedNumbers[sortedNumbers.length-1]);
+        
+        yield log.put('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
+        yield log.put('first: ' + sortedNumbers[0]);
+        yield log.put('last: ' + sortedNumbers[sortedNumbers.length-1]);
 
         
         ///
@@ -54,8 +55,8 @@
                 }
             }
 
-            log.send('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
-            numbers.send(nums);
+            yield log.put('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
+            yield numbers.put(nums);
         }
 
         function* sortNumbers() {
@@ -67,7 +68,7 @@
             start = Date.now();
             nums.sort();
             end = Date.now();
-            sorted.send([nums, end - start]);
+            yield sorted.put([nums, end - start]);
         }
 
     });
