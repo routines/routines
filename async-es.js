@@ -40,6 +40,13 @@
         return fn ? fn.call(x) : true;
     }
 
+    /**
+     * Kick off a goroutine. A goroutine is a generator that runs concurrently
+     * with other goroutines.
+     *
+     * To communicate and synchronize with another goroutine, communicate via a
+     * Channel.
+     */
     function go(routine, ...args) {
         var task,
             next;
@@ -64,9 +71,15 @@
         }
     }
 
+    /**
+     * A channel provides a way for two goroutines to communicate data + synchronize their execution.
+     *
+     * One goroutine can send data by calling "yield channel.put(data)" and another goroutine can
+     * receive data by calling "yield channel.get()".
+     */
     class Channel {
         constructor() {
-            this.active = false;
+            this.synching = false;
             this.inbox = [];
             this.outbox = [];
             this.isOpen = true;
@@ -77,42 +90,84 @@
             this.isOpen = false;
         }
 
-        drain() {
-            var { active, inbox, outbox } = this,
-                message,
-                deliver,
+        /**
+         * Call "yield channel.put(data)" from a goroutine (the sender) to put data in the channel.
+         *
+         * The put method will then try to rendezvous with a receiver goroutine, if any.
+         * If there is no receiver waiting for data, the sender will pause until another
+         * goroutine calls "yield channel.get()", which will then trigger a rendezvous.
+         */
+        put(data) {
+            return function(resume) {
+                this.inbox.push(data, resume);
+                // Try to rendezvous with a receiver
+                this._rendezvous();
+            }.bind(this);
+        }
+
+        /**
+         * Call "yield channel.get()" from a goroutine (the receiver) to get data from the channel.
+         *
+         * The get method will then try to rendezvous with a sender goroutine, if any.
+         * If there is no sender waiting for the data it sent to be delivered, the receiver will
+         * pause until another goroutine calls "yield channel.put(data)", which will then trigger
+         * a rendezvous.
+         */
+        get() {
+            return function(resume) {
+                this.outbox.push(resume);
+                // Try to rendezvous with a sender
+                this._rendezvous();
+            }.bind(this);
+        }
+
+        /**
+         * A channel is a rendezvous point for two otherwise independently executing goroutines.
+         * Such communication + synchronization on a channel requires a sender and receiver.
+         &
+         * A goroutine sends data to a channel using "yield channel.put(data)".
+         * Another goroutine receives data from a channel using "yield channel.get()".
+         *
+         * Once both a sender goroutine and a receiver goroutine are waiting on the channel,
+         * the _rendezvous method transfers the data in the channel to the receiver and consequently
+         * synchronizes the two waiting goroutines.
+         *
+         *  Once synchronized, the two goroutines continue execution. 
+         */
+        _rendezvous() {
+            var { synching, inbox, outbox } = this,
+                data,
+                notify,
                 send,
-                receipt;
+                receipt,
+                senderWaiting,
+                receiverWaiting;
 
-            if (!active) {
-                this.active = true;
+            if (!synching) {
+                this.synching = true;
 
-                while (inbox.length && outbox.length) {
-                    message = inbox.shift();
-                    deliver = inbox.shift();
+                while ((senderWaiting = inbox.length > 0) &&
+                       (receiverWaiting = outbox.length > 0)) {  
+
+                    // Get the data that the sender goroutine put in the channel
+                    data = inbox.shift();
+                    
+                    // Get the method to notify the sender once the data has been
+                    // delivered to the receiver goroutine
+                    notify = inbox.shift();
+
+                    // Get the method used to send the data to the receiver goroutine.
                     send = outbox.shift();
-                    receipt = send(message);
-                    deliver && deliver(receipt);
+                    
+                    // Send the data
+                    receipt = send(data);
+
+                    // Notify the sender that the data has been sent
+                    notify && notify(receipt);
                 }
 
-                this.active = false;
+                this.synching = false;
             }
-        }
-
-        put(message) {
-            var channel = this;
-            return function(resume) {
-                channel.inbox.push(message, resume);
-                channel.drain();
-            };
-        }
-
-        receive() {
-            var channel = this;
-            return function(resume) {
-                channel.outbox.push(resume);
-                channel.drain();
-            };
         }
 
     }
@@ -202,7 +257,7 @@
                 lastData;
             
             while (channel.isOpen) {
-                data = yield channel.receive();
+                data = yield channel.get();
                 if (isFirstData || data !== lastData) {
                     yield output.put(data);
                     isFirstData = false;
@@ -225,7 +280,7 @@
                 data;
             
             while (channel.isOpen) {
-                data = yield channel.receive();
+                data = yield channel.get();
                 clearTimeout(timeoutId);
 
                 timeoutId = setTimeout(() => {
@@ -260,7 +315,7 @@
                         response = item.response,
                         data;
                     
-                    data = yield channel.receive();
+                    data = yield channel.get();
                     response(data);
                     yield done.put(true);
                 });
@@ -269,7 +324,7 @@
 
             go(function* () {
                 while (remaining > 0) {
-                    yield done.receive();
+                    yield done.get();
                     remaining = remaining - 1;
                 }
                 resolve(true);

@@ -20,11 +20,11 @@
             text;
         
         while (true) {
-            evt = yield pacedKeyup.receive();
+            evt = yield pacedKeyup.get();
             text = evt.target.value;
             
             if (text.length > 2) {
-                data = yield searchWikipedia(text).receive();
+                data = yield searchWikipedia(text).get();
                 
                 if (data.error) {
                     results.innerHTML = '<h1p>Error:</h1>' + JSON.stringify(data.error);

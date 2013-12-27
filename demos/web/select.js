@@ -8,17 +8,17 @@
         timetaken;
 
     go(function* () {
-        yield timeout(1000).receive();
+        yield timeout(1000).get();
         yield c1.put('process 1');
     });
 
     go(function* () {
-        yield timeout(2000).receive();
+        yield timeout(2000).get();
         yield c2.put('process 2');        
     });
 
     go(function* () {
-        yield timeout(1500).receive();
+        yield timeout(1500).get();
         yield c3.put('process 3');
     });
 

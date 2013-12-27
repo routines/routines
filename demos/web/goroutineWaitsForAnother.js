@@ -12,7 +12,7 @@
         go(receiveNumbers, lazyseq(100000, randomNumber));
         go(sortNumbers);
         
-        var [ sortedNumbers, sortTime ] = yield sorted.receive();        
+        var [ sortedNumbers, sortTime ] = yield sorted.get();        
 
         
         yield log.put('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
@@ -30,7 +30,7 @@
                 logDiv = document.getElementById('log');
             
             while (true) {                
-                text = yield log.receive(),
+                text = yield log.get(),
                 p = document.createElement('p');
                 p.innerHTML = text;
                 logDiv.appendChild(p);            
@@ -47,7 +47,7 @@
             // for Range syntax; implement it using sweetjs
             // and make part of core Async-es library.
             while (!all) {
-                n = yield channel.receive();
+                n = yield channel.get();
                 if (n === sentinel) {
                     all = true;
                 } else {
@@ -64,7 +64,7 @@
                 start,
                 end;
 
-            nums = yield numbers.receive();
+            nums = yield numbers.get();
             start = Date.now();
             nums.sort();
             end = Date.now();

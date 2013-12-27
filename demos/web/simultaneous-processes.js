@@ -20,7 +20,7 @@
     // Process 1
     go(function* () {
         while (true) {
-            yield timeout(250).receive();
+            yield timeout(250).get();
             yield channel.put(1);
         }
     });
@@ -28,7 +28,7 @@
     // Process 2
     go(function* () {
         while (true) {
-            yield timeout(1000).receive();
+            yield timeout(1000).get();
             yield channel.put(2);
         }
     });
@@ -37,7 +37,7 @@
     // Process 3
     go(function* () {
         while (true) {
-            yield timeout(1500).receive();
+            yield timeout(1500).get();
             yield channel.put(3);
         }
     });
@@ -50,7 +50,7 @@
 
         while (true) {
             out.innerHTML = render(data);
-            newItem = yield channel.receive();
+            newItem = yield channel.get();
             data.push(newItem);
             data = peekn(data, 10);
         }
