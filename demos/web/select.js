@@ -9,17 +9,17 @@
 
     go(function* () {
         yield timeout(1000).receive();
-        c1.send('process 1');
+        yield c1.put('process 1');
     });
 
     go(function* () {
         yield timeout(2000).receive();
-        c2.send('process 2');        
+        yield c2.put('process 2');        
     });
 
     go(function* () {
         yield timeout(1500).receive();
-        c3.send('process 3');
+        yield c3.put('process 3');
     });
 
 

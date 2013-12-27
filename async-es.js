@@ -144,7 +144,9 @@
         var output = new Channel();
 
         setTimeout(function() {
-            output.send(ms);
+            go(function* () {
+                yield output.put(ms);
+            });
         }, ms);
         
         return output;
