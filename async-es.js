@@ -152,16 +152,23 @@
 
 
     function listen(el, type) {
-        var output = new EventChannel(el, type, (e) => {
-            output.send(e);
-        });
+        var handler = (e) => {
+                go(function* () {
+                    yield output.put(e);
+                });
+        };
 
+        var output = new EventChannel(el, type, handler);
         return output;
     }
 
     function jsonp(url) {
         var output = new Channel();
-        $.getJSON(url, output.send.bind(output));
+        $.getJSON(url, (data)=> {
+            go(function* () {
+                yield output.put(data);
+            });
+        });
         return output;
     }
 
@@ -198,7 +205,7 @@
             while (channel.isOpen) {
                 data = yield channel.receive();
                 if (isFirstData || data !== lastData) {
-                    output.send(data);
+                    yield output.put(data);
                     isFirstData = false;
                 }
                 lastData = data;
@@ -221,8 +228,11 @@
             while (channel.isOpen) {
                 data = yield channel.receive();
                 clearTimeout(timeoutId);
+
                 timeoutId = setTimeout(() => {
-                    output.send(data);
+                    go(function* () {
+                        yield output.put(data);
+                    });
                 }, ms);
             }
 
