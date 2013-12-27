@@ -27,6 +27,8 @@
 (function(global) {
     'use strict';
 
+    var sentinel = Symbol('Ω');
+
     if (global.async) {
         // Prevents from being executed multiple times.
         return;
@@ -55,7 +57,7 @@
                 }
 
                 return res;
-            }
+            };
             next();                        
         } else {
             throw new TypeError('routine must be a generator');
@@ -163,6 +165,22 @@
         return output;
     }
 
+    function lazyseq(count, fn, ...args) {
+        var output = new Channel();
+        go(function* () {
+            var data,
+                i = 0;
+            while (0 < count--) {
+                data = fn(i, args);
+                yield output.put(data);
+            }
+
+            yield output.put(sentinel);
+            output.close();
+        });
+        return output;
+    }
+
     
     ///
     /// Channel transformers
@@ -244,7 +262,6 @@
                 while (remaining > 0) {
                     yield done.receive();
                     remaining = remaining - 1;
-                    console.log(remaining);
                 }
                 resolve(true);
             });
@@ -252,7 +269,6 @@
 
         return promise;
     }
-
 
     
     ///
@@ -268,13 +284,16 @@
         timeout: timeout,
         listen: listen,
         jsonp: jsonp,
+        lazyseq: lazyseq,
 
         // Channel transformers
         unique: unique,
         pace: pace,
 
         // Channel coordination
-        select: select
+        sentinel: sentinel,
+        select: select, // Rewrite as syntax using sweet.js?
+        range: null // Implement as syntax using sweet.js?
         
     };    
 

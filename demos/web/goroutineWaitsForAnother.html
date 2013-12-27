@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="goroutineWaitsForAnother.css">
+    <script src="../../lib/traceur/traceur.js"></script>
+    <script src="../..//lib/traceur/bootstrap.js"></script>    
+  </head>
+  <body>
+    <div id="log"></div>
+    <script>traceur.options.deferredFunctions = true;</script>
+    <script>traceur.options.experimental = true;</script>
+    <script src="../../async-es.js" type="text/traceur"></script>
+    <script src="goroutineWaitsForAnother.js" type="text/traceur"></script>
+  </body>
+
+</html>
