@@ -1,10 +1,7 @@
 async.es
 ========
 
-See the intro tutorial (building an autocomplete search box for Wikipedia) here: http://async.es
-
-Thinking behind async.es is discussed here: https://github.com/async-es/async-es/wiki/Asynchronous-programming
-
+Rationale, documentation, and examples at http://async.es
 
 Async.es is free software distributed under the terms of the MIT license reproduced here.
 Async-es may be used for any purpose, including commercial purposes, at absolutely no cost.
