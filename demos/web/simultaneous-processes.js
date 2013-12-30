@@ -1,8 +1,5 @@
-(function() {
-    var Channel = $async.Channel,
-        go = $async.go,
-        timeout = $async.timeout,
-        channel = new Channel(),
+(function(Pipe, job, timeout) {
+    var pipe = new Pipe(),
         out = document.getElementById('out');
 
     function render(q) {
@@ -18,42 +15,42 @@
     }
 
     // Process 1
-    go(function* () {
+    job(function* () {
         while (true) {
             yield timeout(250).get();
-            yield channel.put(1);
+            yield pipe.put(1);
         }
     });
 
     // Process 2
-    go(function* () {
+    job(function* () {
         while (true) {
             yield timeout(1000).get();
-            yield channel.put(2);
+            yield pipe.put(2);
         }
     });
 
     
     // Process 3
-    go(function* () {
+    job(function* () {
         while (true) {
             yield timeout(1500).get();
-            yield channel.put(3);
+            yield pipe.put(3);
         }
     });
 
 
     // Render 10 most recent items from the 3 simultaneous processes
-    go(function* () {
+    job(function* () {
         var data = [],
             newItem;
 
         while (true) {
             out.innerHTML = render(data);
-            newItem = yield channel.get();
+            newItem = yield pipe.get();
             data.push(newItem);
             data = peekn(data, 10);
         }
     });
 
-})();
+})($async.Pipe, $async.job, $async.timeout);

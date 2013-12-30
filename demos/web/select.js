@@ -1,23 +1,23 @@
-(function(Channel, go, timeout, select) {
+(function(Pipe, job, timeout, select) {
 
-    var c1 = new Channel(),
-        c2 = new Channel(),
-        c3 = new Channel(),
+    var c1 = new Pipe(),
+        c2 = new Pipe(),
+        c3 = new Pipe(),
         out = document.getElementById('out'),
         start = Date.now(),
         timetaken;
 
-    go(function* () {
+    job(function* () {
         yield timeout(1000).get();
         yield c1.put('process 1');
     });
 
-    go(function* () {
+    job(function* () {
         yield timeout(2000).get();
         yield c2.put('process 2');        
     });
 
-    go(function* () {
+    job(function* () {
         yield timeout(1500).get();
         yield c3.put('process 3');
     });
@@ -38,4 +38,4 @@
     message('Notice that total time taken is under 3s since the processes run in parallel.');
 
 
-})($async.Channel, $async.go, $async.timeout, $async.select);
+})($async.Pipe, $async.job, $async.timeout, $async.select);

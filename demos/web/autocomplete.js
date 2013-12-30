@@ -1,11 +1,4 @@
-if (!$async) {
-    // It seems that traceur *sometimes*, fails to properly insert our
-    // code from async-es.js
-    // When that happens, we simply ask the user to reload the page.
-    alert('An unexpected error occurred. Please reload the page.');
-}
-
-(function(Channel, go, listen, unique, pace, jsonp) {
+(function(Pipe, job, listen, unique, pace, jsonp) {
 
     var input = document.getElementById('searchtext'),
         results = document.getElementById('results');
@@ -37,7 +30,7 @@ if (!$async) {
         results.innerHTML = '<h1p>Error:</h1>' + err;
     }
 
-    go(function* () {
+    job(function* () {
         var keyup = listen(input, 'keyup'),
             pacedKeyup = pace(keyup, 300),
             evt, data, res, text, previousText,
@@ -67,4 +60,4 @@ if (!$async) {
         }
     });
 
-})($async.Channel, $async.go, $async.listen, $async.unique, $async.pace, $async.jsonp);
+})($async.Pipe, $async.job, $async.listen, $async.unique, $async.pace, $async.jsonp);

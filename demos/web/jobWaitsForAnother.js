@@ -1,16 +1,16 @@
 
-(function(Channel, go, select, timeout, sentinel, lazyseq) {
+(function(Pipe, job, select, timeout, sentinel, lazyseq) {
 
-    go(function* () {
+    job(function* () {
 
-        var sorted = new Channel(),
-            log = new Channel(),
-            numbers = new Channel(),
+        var sorted = new Pipe(),
+            log = new Pipe(),
+            numbers = new Pipe(),
             randomNumber = (index) => { return Math.random(); };
 
-        go(printLogMessages);
-        go(receiveNumbers, lazyseq(100000, randomNumber));
-        go(sortNumbers);
+        job(printLogMessages);
+        job(receiveNumbers, lazyseq(100000, randomNumber));
+        job(sortNumbers);
         
         var [ sortedNumbers, sortTime ] = yield sorted.get();        
 
@@ -21,7 +21,7 @@
 
         
         ///
-        /// Goroutines
+        /// Jobs
         ///
 
 
@@ -75,4 +75,4 @@
 
 
 
-})($async.Channel, $async.go, $async.select, $async.timeout, $async.sentinel, $async.lazyseq);
+})($async.Pipe, $async.job, $async.select, $async.timeout, $async.sentinel, $async.lazyseq);
