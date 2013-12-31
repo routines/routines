@@ -27,9 +27,9 @@
 (function(global) {
     'use strict';
 
-    var sentinel = Symbol('Ω');
+    var sentinel = '|Ω|';
 
-    if (global.Pipe) {
+    if (global.JSPipe) {
         // Prevents from being executed multiple times.
         return;
     }
@@ -51,14 +51,16 @@
      * To communicate and synchronize with another job, communicate via a
      * Pipe.
      */
-    function job(routine, ...args) {
+    function job(routine, args) {
         var task,
             next;
 
         if (isGenerator(routine)) {
-            task = routine(...args);
-            next = (data) => {
-                var {done, value} = task.next(data),
+            task = routine.apply(routine, args);
+            next = function(data) {
+                var nextItem = task.next(data),
+                    done = nextItem.done,
+                    value = nextItem.value,
                     res;
 
                 if (done) {
@@ -81,113 +83,122 @@
      * One job can send data by calling "yield pipe.put(data)" and another job can
      * receive data by calling "yield pipe.get()".
      */
-    class Pipe {
-        constructor() {
-            this.synching = false;
-            this.inbox = [];
-            this.outbox = [];
-            this.isOpen = true;
-        }
+    function Pipe() {
+        this.syncing = false;
+        this.inbox = [];
+        this.outbox = [];
+        this.isOpen = true;
+    }
 
-        close() {
-            // TODO: implement
-            this.isOpen = false;
-        }
+    Pipe.prototype.close = function() {
+        this.isOpen = false;
+    };
 
-        /**
-         * Call "yield pipe.put(data)" from a job (the sender) to put data in the pipe.
-         *
-         * The put method will then try to rendezvous with a receiver job, if any.
-         * If there is no receiver waiting for data, the sender will pause until another
-         * job calls "yield pipe.get()", which will then trigger a rendezvous.
-         */
-        put(data) {
-            return function(resume) {
-                this.inbox.push(data, resume);
-                // Try to rendezvous with a receiver
-                this._rendezvous();
-            }.bind(this);
-        }
+    /**
+     * Call "yield pipe.put(data)" from a job (the sender) to put data in the pipe.
+     *
+     * The put method will then try to rendezvous with a receiver job, if any.
+     * If there is no receiver waiting for data, the sender will pause until another
+     * job calls "yield pipe.get()", which will then trigger a rendezvous.
+     */
+    Pipe.prototype.put = function(data) {
+        return function(resume) {
+            this.inbox.push(data, resume);
+            // Try to rendezvous with a receiver
+            this._rendezvous();
+        }.bind(this);
+    };
 
-        /**
-         * Call "yield pipe.get()" from a job (the receiver) to get data from the pipe.
-         *
-         * The get method will then try to rendezvous with a sender job, if any.
-         * If there is no sender waiting for the data it sent to be delivered, the receiver will
-         * pause until another job calls "yield pipe.put(data)", which will then trigger
-         * a rendezvous.
-         */
-        get() {
-            return function(resume) {
-                this.outbox.push(resume);
-                // Try to rendezvous with a sender
-                this._rendezvous();
-            }.bind(this);
-        }
+    /**
+     * Call "yield pipe.get()" from a job (the receiver) to get data from the pipe.
+     *
+     * The get method will then try to rendezvous with a sender job, if any.
+     * If there is no sender waiting for the data it sent to be delivered, the receiver will
+     * pause until another job calls "yield pipe.put(data)", which will then trigger
+     * a rendezvous.
+     */
+    Pipe.prototype.get = function() {
+        return function(resume) {
+            this.outbox.push(resume);
+            // Try to rendezvous with sender
+            this._rendezvous();
+        }.bind(this);
+    };
 
-        /**
-         * A pipe is a rendezvous point for two otherwise independently executing jobs.
-         * Such communication + synchronization on a pipe requires a sender and receiver.
-         &
-         * A job sends data to a pipe using "yield pipe.put(data)".
-         * Another job receives data from a pipe using "yield pipe.get()".
-         *
-         * Once both a sender job and a receiver job are waiting on the pipe,
-         * the _rendezvous method transfers the data in the pipe to the receiver and consequently
-         * synchronizes the two waiting jobs.
-         *
-         *  Once synchronized, the two jobs continue execution. 
-         */
-        _rendezvous() {
-            var { synching, inbox, outbox } = this,
-                data,
-                notify,
-                send,
-                receipt,
-                senderWaiting,
-                receiverWaiting;
+    
+    /**
+     * A pipe is a rendezvous point for two otherwise independently executing jobs.
+     * Such communication + synchronization on a pipe requires a sender and receiver.
+     &
+     * A job sends data to a pipe using "yield pipe.put(data)".
+     * Another job receives data from a pipe using "yield pipe.get()".
+     *
+     * Once both a sender job and a receiver job are waiting on the pipe,
+     * the _rendezvous method transfers the data in the pipe to the receiver and consequently
+     * synchronizes the two waiting jobs.
+     *
+     *  Once synchronized, the two jobs continue execution. 
+     */
+    Pipe.prototype._rendezvous = function() {
+        var syncing = this.syncing,
+            inbox = this.inbox,
+            outbox = this.outbox,
+            data,
+            notify,
+            send,
+            receipt,
+            senderWaiting,
+            receiverWaiting;
 
-            if (!synching) {
-                this.synching = true;
+        if (!syncing) {
+            this.syncing = true;
 
-                while ((senderWaiting = inbox.length > 0) &&
-                       (receiverWaiting = outbox.length > 0)) {  
+            while ((senderWaiting = inbox.length > 0) &&
+                   (receiverWaiting = outbox.length > 0)) {  
 
-                    // Get the data that the sender job put in the pipe
-                    data = inbox.shift();
-                    
-                    // Get the method to notify the sender once the data has been
-                    // delivered to the receiver job
-                    notify = inbox.shift();
+                // Get the data that the sender job put in the pipe
+                data = inbox.shift();
+                
+                // Get the method to notify the sender once the data has been
+                // delivered to the receiver job
+                notify = inbox.shift();
 
-                    // Get the method used to send the data to the receiver job.
-                    send = outbox.shift();
-                    
-                    // Send the data
-                    receipt = send(data);
+                // Get the method used to send the data to the receiver job.
+                send = outbox.shift();
+                
+                // Send the data
+                receipt = send(data);
 
-                    // Notify the sender that the data has been sent
-                    notify && notify(receipt);
-                }
-
-                this.synching = false;
+                // Notify the sender that the data has been sent
+                notify && notify(receipt);
             }
-        }
 
+            this.syncing = false;
+        }
+    };
+    
+
+    function EventPipe(el, type, handler) {
+        // super
+        Pipe.call(this);        
+
+        this._el = el;
+        this._type = type;
+        this._handler = handler;
+        el.addEventListener(type, handler);
     }
 
+    EventPipe.prototype = Object.create(Pipe.prototype);
 
-    class EventPipe extends Pipe {
-        constructor(el, type, handler) {
-            el.addEventListener(type, handler);
-            super();
-        }
+    EventPipe.prototype.close = function() {
+        this._el.removeEventListener(this._type, this._handler);
+        delete this._el;
+        delete this._type;
+        delete this._handler;
+        // super
+        Pipe.prototype.close.call(this);        
+    };
 
-        close() {
-            el.removeEventListener(type, handler);
-            super();
-        }
-    }
 
     
     ///
@@ -208,11 +219,12 @@
         return output;
     }
 
+    
     function listen(el, type) {
-        var handler = (e) => {
-                job(function* () {
-                    yield output.put(e);
-                });
+        var handler = function(e) {
+            job(function* () {
+                yield output.put(e);
+            });
         };
 
         var output = new EventPipe(el, type, handler);
@@ -221,7 +233,7 @@
 
     function jsonp(url) {
         var output = new Pipe();
-        $.getJSON(url, (data)=> {
+        $.getJSON(url, function(data) {
             job(function* () {
                 yield output.put(data);
             });
@@ -229,14 +241,16 @@
         return output;
     }
 
-    function lazyseq(count, fn, ...args) {
-        var output = new Pipe();
+
+    function lazyseq(count, fn) {
+        var output = new Pipe();            
         job(function* () {
             var data,
                 i = 0;
             while (0 < count--) {
-                data = fn(i, args);
+                data = fn(i);
                 yield output.put(data);
+                i++;
             }
 
             yield output.put(sentinel);
@@ -244,7 +258,6 @@
         });
         return output;
     }
-
     
     ///
     /// Pipe transformers
@@ -286,7 +299,7 @@
                 data = yield pipe.get();
                 clearTimeout(timeoutId);
 
-                timeoutId = setTimeout(() => {
+                timeoutId = setTimeout(function() {
                     job(function* () {
                         yield output.put(data);
                     });
@@ -306,34 +319,30 @@
     ///
 
     function select(cases) {
-        var done = new Pipe(),
-            remaining = cases.length,
-            promise;
+        var output = new Pipe(),
+            done = new Pipe(),
+            remaining = cases.length;
 
-        promise = new Promise((resolve) => {
-
-            cases.forEach(function(item) {
-                job(function* () {
-                    var { pipe, response } = item,
-                        data;
-                    
-                    data = yield pipe.get();
-                    response(data);
-                    yield done.put(true);
-                });
-            });
-
-
+        cases.forEach(function(item) {
             job(function* () {
-                while (remaining > 0) {
-                    yield done.get();
-                    remaining = remaining - 1;
-                }
-                resolve(true);
+                var pipe = item.pipe,
+                    response = item.response,
+                    data;
+                data = yield pipe.get();
+                response(data);
+                yield done.put(true);
             });
         });
 
-        return promise;
+        job(function* () {
+            while (remaining > 0) {
+                yield done.get();
+                remaining = remaining - 1;
+            }
+            yield output.put(sentinel);
+        });
+
+        return output;
     }
 
     
@@ -342,7 +351,7 @@
     ///
     
 
-    global.Pipe = {
+    global.JSPipe = {
         job: job,
         Pipe: Pipe,
 
