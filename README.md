@@ -6,6 +6,8 @@ Rationale, documentation, and examples at http://jspipe.org
 The ES5-compatible files (*.es5.js) have been produced using Facebook's regenerator, a tool
 to transpile (ES6) Generator code to ES5. You can get it here: https://github.com/facebook/regenerator
 
+------
+
 JS/Pipe is free software distributed under the terms of the MIT license reproduced here.
 
 JS/Pipe may be used for any purpose, including commercial purposes, at absolutely no cost.
