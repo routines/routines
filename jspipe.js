@@ -1,5 +1,5 @@
-// Async.es is free software distributed under the terms of the MIT license reproduced here.
-// Async-es may be used for any purpose, including commercial purposes, at absolutely no cost.
+// JSPipe is free software distributed under the terms of the MIT license reproduced here.
+// JSPipe may be used for any purpose, including commercial purposes, at absolutely no cost.
 // No paperwork, no royalties, no GNU-like "copyleft" restrictions, either.
 // Just download it and use it.
 
@@ -29,7 +29,7 @@
 
     var sentinel = Symbol('Ω');
 
-    if (global.async) {
+    if (global.Pipe) {
         // Prevents from being executed multiple times.
         return;
     }
@@ -76,10 +76,10 @@
     }
 
     /**
-     * A channel provides a way for two jobs to communicate data + synchronize their execution.
+     * A pipe provides a way for two jobs to communicate data + synchronize their execution.
      *
-     * One job can send data by calling "yield channel.put(data)" and another job can
-     * receive data by calling "yield channel.get()".
+     * One job can send data by calling "yield pipe.put(data)" and another job can
+     * receive data by calling "yield pipe.get()".
      */
     class Pipe {
         constructor() {
@@ -95,11 +95,11 @@
         }
 
         /**
-         * Call "yield channel.put(data)" from a job (the sender) to put data in the channel.
+         * Call "yield pipe.put(data)" from a job (the sender) to put data in the pipe.
          *
          * The put method will then try to rendezvous with a receiver job, if any.
          * If there is no receiver waiting for data, the sender will pause until another
-         * job calls "yield channel.get()", which will then trigger a rendezvous.
+         * job calls "yield pipe.get()", which will then trigger a rendezvous.
          */
         put(data) {
             return function(resume) {
@@ -110,11 +110,11 @@
         }
 
         /**
-         * Call "yield channel.get()" from a job (the receiver) to get data from the channel.
+         * Call "yield pipe.get()" from a job (the receiver) to get data from the pipe.
          *
          * The get method will then try to rendezvous with a sender job, if any.
          * If there is no sender waiting for the data it sent to be delivered, the receiver will
-         * pause until another job calls "yield channel.put(data)", which will then trigger
+         * pause until another job calls "yield pipe.put(data)", which will then trigger
          * a rendezvous.
          */
         get() {
@@ -126,14 +126,14 @@
         }
 
         /**
-         * A channel is a rendezvous point for two otherwise independently executing jobs.
-         * Such communication + synchronization on a channel requires a sender and receiver.
+         * A pipe is a rendezvous point for two otherwise independently executing jobs.
+         * Such communication + synchronization on a pipe requires a sender and receiver.
          &
-         * A job sends data to a channel using "yield channel.put(data)".
-         * Another job receives data from a channel using "yield channel.get()".
+         * A job sends data to a pipe using "yield pipe.put(data)".
+         * Another job receives data from a pipe using "yield pipe.get()".
          *
-         * Once both a sender job and a receiver job are waiting on the channel,
-         * the _rendezvous method transfers the data in the channel to the receiver and consequently
+         * Once both a sender job and a receiver job are waiting on the pipe,
+         * the _rendezvous method transfers the data in the pipe to the receiver and consequently
          * synchronizes the two waiting jobs.
          *
          *  Once synchronized, the two jobs continue execution. 
@@ -153,7 +153,7 @@
                 while ((senderWaiting = inbox.length > 0) &&
                        (receiverWaiting = outbox.length > 0)) {  
 
-                    // Get the data that the sender job put in the channel
+                    // Get the data that the sender job put in the pipe
                     data = inbox.shift();
                     
                     // Get the method to notify the sender once the data has been
@@ -208,7 +208,6 @@
         return output;
     }
 
-
     function listen(el, type) {
         var handler = (e) => {
                 job(function* () {
@@ -252,7 +251,7 @@
     ///
     
 
-    function unique(channel) {
+    function unique(pipe) {
         var output = new Pipe();
         
         job(function* () {
@@ -260,8 +259,8 @@
                 data,
                 lastData;
             
-            while (channel.isOpen) {
-                data = yield channel.get();
+            while (pipe.isOpen) {
+                data = yield pipe.get();
                 if (isFirstData || data !== lastData) {
                     yield output.put(data);
                     isFirstData = false;
@@ -276,15 +275,15 @@
         return output;
     }
 
-    function pace(channel, ms) {
+    function pace(pipe, ms) {
         var output = new Pipe();
         
         job(function* () {
             var timeoutId,
                 data;
             
-            while (channel.isOpen) {
-                data = yield channel.get();
+            while (pipe.isOpen) {
+                data = yield pipe.get();
                 clearTimeout(timeoutId);
 
                 timeoutId = setTimeout(() => {
@@ -315,11 +314,10 @@
 
             cases.forEach(function(item) {
                 job(function* () {
-                    var channel = item.channel,
-                        response = item.response,
+                    var { pipe, response } = item,
                         data;
                     
-                    data = yield channel.get();
+                    data = yield pipe.get();
                     response(data);
                     yield done.put(true);
                 });
@@ -344,7 +342,7 @@
     ///
     
 
-    global.$async = {
+    global.Pipe = {
         job: job,
         Pipe: Pipe,
 

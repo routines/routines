@@ -1,10 +1,11 @@
-async.es
+JSPipe
 ========
 
-Rationale, documentation, and examples at http://async.es
+Rationale, documentation, and examples at http://jspipe.org
 
-Async.es is free software distributed under the terms of the MIT license reproduced here.
-Async-es may be used for any purpose, including commercial purposes, at absolutely no cost.
+JSPipe is free software distributed under the terms of the MIT license reproduced here.
+
+JSPipe may be used for any purpose, including commercial purposes, at absolutely no cost.
 No paperwork, no royalties, no GNU-like "copyleft" restrictions, either.
 Just download it and use it.
 
