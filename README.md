@@ -1,11 +1,11 @@
-JSPipe
+JS/Pipe
 ========
 
 Rationale, documentation, and examples at http://jspipe.org
 
-JSPipe is free software distributed under the terms of the MIT license reproduced here.
+JS/Pipe is free software distributed under the terms of the MIT license reproduced here.
 
-JSPipe may be used for any purpose, including commercial purposes, at absolutely no cost.
+JS/Pipe may be used for any purpose, including commercial purposes, at absolutely no cost.
 No paperwork, no royalties, no GNU-like "copyleft" restrictions, either.
 Just download it and use it.
 
