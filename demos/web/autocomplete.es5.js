@@ -13,17 +13,6 @@ function main(Pipe, job, listen,  pace) {
     job(displaySearchResults, [searchResultsPipe]);
     job(getUserSearchInput, [searchRequestPipe]);
 
-    function showResults(terms) {
-        var i, len, p;
-        results.innerHTML = '';
-        
-        for (i = 0, len = terms.length; i < len; i++) {
-            p = document.createElement('p');
-            p.innerHTML = terms[i];
-            results.appendChild(p);
-        }                
-    }
-
     function search(requestPipe, resultPipe) {
         var searchTerm, httpRequest;
 
@@ -38,9 +27,7 @@ function main(Pipe, job, listen,  pace) {
                     break;
                 }
 
-                if (httpRequest) { // If there is an existing API request in flight, cancel it. 
-                    httpRequest.abort();
-                }
+                httpRequest && httpRequest.abort();
 
                 httpRequest = $.getJSON(wikipediaUrl + encodeURIComponent(searchTerm),
                                         resultPipe.send.bind(resultPipe));
@@ -55,7 +42,7 @@ function main(Pipe, job, listen,  pace) {
     }
 
     function displaySearchResults(resultPipe) {
-        var res, lines, html;
+        var res, lines;
 
         return wrapGenerator(function displaySearchResults$($ctx) {
             while (1) switch ($ctx.next) {
@@ -64,16 +51,19 @@ function main(Pipe, job, listen,  pace) {
                 return resultPipe.get();
             case 2:
                 if (!(res = $ctx.sent)) {
-                    $ctx.next = 8;
+                    $ctx.next = 7;
                     break;
                 }
 
                 lines = res.error && ['<h1>' + res.error + '</h1>'] || res[0] && res[1];
-                html = lines.map(function(line) { return '<p>' + line + '</p>'; });
-                results.innerHTML = html.join('');
+
+                results.innerHTML = lines.map(function(line) {
+                    return '<p>' + line + '</p>';
+                }).join('');
+
                 $ctx.next = 0;
                 break;
-            case 8:
+            case 7:
             case "end":
                 return $ctx.stop();
             }
@@ -102,7 +92,7 @@ function main(Pipe, job, listen,  pace) {
                 if (minLength && text !== previousText) {
                     requestPipe.send(text);                
                 } else if (!minLength) {
-                    showResults([]);
+                    results.innerHTML = '';
                 }
 
                 previousText = text;
@@ -115,6 +105,5 @@ function main(Pipe, job, listen,  pace) {
         }, this);
     }
 };
-
 
 main(JSPipe.Pipe, JSPipe.job, JSPipe.listen, JSPipe.pace);

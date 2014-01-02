@@ -16,10 +16,7 @@ function main(Pipe, job, listen,  pace) {
             httpRequest;
         
         while (searchTerm = yield requestPipe.get()) {
-            if (httpRequest) { // If there is an existing API request in flight, cancel it. 
-                httpRequest.abort();
-            }
-            
+            httpRequest && httpRequest.abort();
             httpRequest = $.getJSON(wikipediaUrl + encodeURIComponent(searchTerm),
                                     resultPipe.send.bind(resultPipe));
         }
@@ -27,13 +24,13 @@ function main(Pipe, job, listen,  pace) {
 
     function* displaySearchResults(resultPipe) {
         var res,
-            lines,
-            html;
+            lines;
         
         while (res = yield resultPipe.get()) {
             lines = res.error && ['<h1>' + res.error + '</h1>'] || res[0] && res[1];
-            html = lines.map(function(line) { return '<p>' + line + '</p>'; });
-            results.innerHTML = html.join('');
+            results.innerHTML = lines.map(function(line) {
+                return '<p>' + line + '</p>';
+            }).join('');
         }
     }
 
