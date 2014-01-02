@@ -382,6 +382,10 @@
         }.bind(this);
     };
 
+    Pipe.prototype.waiting = function() {
+        return this.outbox.length;
+    };
+
     /**
      * Call "yield pipe.get()" from a job (the receiver) to get data from the pipe.
      *
@@ -396,6 +400,10 @@
             // Try to rendezvous with sender
             this._rendezvous();
         }.bind(this);
+    };
+
+    Pipe.prototype.send = function(message) {
+        this.put(message)();
     };
 
     
@@ -522,7 +530,7 @@
         return output;
     }
 
-    function jsonp(url) {
+    function jsonp(url, id) {
         var output = new Pipe();
         $.getJSON(url, function(data) {
             job(wrapGenerator.mark(function() {
@@ -530,7 +538,9 @@
                     while (1) switch ($ctx.next) {
                     case 0:
                         $ctx.next = 2;
-                        return output.put(data);
+
+                        return output.put({ data: data,
+                                           id: id })
                     case 2:
                     case "end":
                         return $ctx.stop();
@@ -629,7 +639,7 @@
         return output;
     }
 
-    function pace(pipe, ms) {
+    function pace(ms, pipe) {
         var output = new Pipe();
         
         job(wrapGenerator.mark(function() {
@@ -668,6 +678,39 @@
                     break;
                 case 8:
                     output.close();
+                case 9:
+                case "end":
+                    return $ctx.stop();
+                }
+            }, this);
+        }));
+
+        return output;
+    }
+
+    function delay(pipe, ms) {
+        var output = new Pipe();
+        job(wrapGenerator.mark(function() {
+            var data;
+
+            return wrapGenerator(function($ctx) {
+                while (1) switch ($ctx.next) {
+                case 0:
+                    if (!pipe.isOpen) {
+                        $ctx.next = 9;
+                        break;
+                    }
+
+                    $ctx.next = 3;
+                    return timeout(ms).get();
+                case 3:
+                    $ctx.next = 5;
+                    return pipe.get();
+                case 5:
+                    data = $ctx.sent;
+                    output.send(data);
+                    $ctx.next = 0;
+                    break;
                 case 9:
                 case "end":
                     return $ctx.stop();
@@ -758,6 +801,7 @@
         // Pipe transformers
         unique: unique,
         pace: pace,
+        delay: delay,
 
         // Pipe coordination
         sentinel: sentinel,

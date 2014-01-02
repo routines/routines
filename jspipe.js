@@ -109,6 +109,10 @@
         }.bind(this);
     };
 
+    Pipe.prototype.waiting = function() {
+        return this.outbox.length;
+    };
+
     /**
      * Call "yield pipe.get()" from a job (the receiver) to get data from the pipe.
      *
@@ -123,6 +127,10 @@
             // Try to rendezvous with sender
             this._rendezvous();
         }.bind(this);
+    };
+
+    Pipe.prototype.send = function(message) {
+        this.put(message)();
     };
 
     
@@ -231,11 +239,12 @@
         return output;
     }
 
-    function jsonp(url) {
+    function jsonp(url, id) {
         var output = new Pipe();
         $.getJSON(url, function(data) {
             job(function* () {
-                yield output.put(data);
+                yield output.put({ data: data,
+                                   id: id });
             });
         });
         return output;
@@ -288,7 +297,7 @@
         return output;
     }
 
-    function pace(pipe, ms) {
+    function pace(ms, pipe) {
         var output = new Pipe();
         
         job(function* () {
@@ -308,6 +317,20 @@
 
             output.close();
 
+        });
+
+        return output;
+    }
+
+    function delay(pipe, ms) {
+        var output = new Pipe();
+        job(function* () {
+            var data;
+            while (pipe.isOpen) {
+                yield timeout(ms).get();
+                data = yield pipe.get();
+                output.send(data);
+            }
         });
 
         return output;
@@ -364,6 +387,7 @@
         // Pipe transformers
         unique: unique,
         pace: pace,
+        delay: delay,
 
         // Pipe coordination
         sentinel: sentinel,

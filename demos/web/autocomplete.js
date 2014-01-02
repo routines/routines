@@ -1,65 +1,62 @@
-function main(Pipe, job, listen, unique, pace, jsonp) {
-
+function main(Pipe, job, listen,  pace) {
+    
     var input = document.getElementById('searchtext'),
-        results = document.getElementById('results');
+        results = document.getElementById('results'),
+        wikipediaUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&format=json&callback=?&search=',
+        searchRequestPipe = new Pipe(),
+        searchResultsPipe = new Pipe();
 
-    function clearResults() {
-        results.innerHTML = '';
-    }
+    job(search, [searchRequestPipe, searchResultsPipe]);
+    job(displaySearchResults, [searchResultsPipe]);
+    job(getUserSearchInput, [searchRequestPipe]);
 
-    function showResults(terms) {
-        var i, len, p;
 
-        clearResults();
+    function* search(requestPipe, resultPipe) {
+        var searchTerm,
+            httpRequest;
         
-        for (i = 0, len = terms.length; i < len; i++) {
-            p = document.createElement('p');
-            p.innerHTML = terms[i];
-            results.appendChild(p);
-        }                
+        while (searchTerm = yield requestPipe.get()) {
+            if (httpRequest) { // If there is an existing API request in flight, cancel it. 
+                httpRequest.abort();
+            }
+            
+            httpRequest = $.getJSON(wikipediaUrl + encodeURIComponent(searchTerm),
+                                    resultPipe.send.bind(resultPipe));
+        }
     }
 
-    function searchWikipedia(term) {
-        var url = 'http://en.wikipedia.org/w/api.php?action=opensearch&format=json&callback=?&search=' +
-                encodeURIComponent(term);
-        return jsonp(url);
+    function* displaySearchResults(resultPipe) {
+        var res,
+            lines,
+            html;
+        
+        while (res = yield resultPipe.get()) {
+            lines = res.error && ['<h1>' + res.error + '</h1>'] || res[0] && res[1];
+            html = lines.map(function(line) { return '<p>' + line + '</p>'; });
+            results.innerHTML = html.join('');
+        }
     }
 
-
-    function showError(err) {
-        results.innerHTML = '<h1p>Error:</h1>' + err;
-    }
-
-    job(function* () {
-        var keyup = listen(input, 'keyup'),
-            pacedKeyup = pace(keyup, 300),
-            evt, data, res, text, previousText,
+    function* getUserSearchInput(requestPipe) {
+        var pacedKeyup = pace(300, listen(input, 'keyup')),
+            evt,
+            text,
+            previousText,
             minLength;
         
-        while (true) {
-            evt = yield pacedKeyup.get();
+        while (evt = yield pacedKeyup.get()) {
             text = evt.target.value;
             minLength = text.length > 2;
 
-            if (minLength && text !== previousText) {                
-                data = yield searchWikipedia(text).get();
-                
-                if (data.error) {
-                    showError(JSON.stringify(data.error));
-                } else {                    
-                    if (data[0] && data[1]) {
-                        showResults(data[1]);
-                    }
-                }
-                
+            if (minLength && text !== previousText) {
+                requestPipe.send(text);                
             } else if (!minLength) {
-                clearResults();
+                results.innerHTML = '';
             }
 
             previousText = text;
-        }
-    });
+        }        
+    }
 };
 
-
-main(JSPipe.Pipe, JSPipe.job, JSPipe.listen, JSPipe.unique, JSPipe.pace, JSPipe.jsonp);
+main(JSPipe.Pipe, JSPipe.job, JSPipe.listen, JSPipe.pace);
