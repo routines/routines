@@ -1,0 +1,27 @@
+{
+  "name": "jspipe",
+  "version": "0.1.0",
+  "description": "JS/Pipe ========",
+  "main": "jspipe.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jspipe/jspipe.git"
+  },
+  "keywords": [
+    "async"
+  ],
+  "author": "Joubert Nel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jspipe/jspipe/issues"
+  },
+  "dependencies": {
+      "grunt": "*",
+      "grunt-contrib-watch": "*",
+      "regenerator": "*"
+  },
+  "homepage": "https://github.com/jspipe/jspipe"
+}
