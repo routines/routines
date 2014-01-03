@@ -4,8 +4,8 @@ module.exports = function(grunt) {
     // Building the template file for the regenerator task.
     grunt.registerMultiTask('regenerator', 'Facebook Regenerator.', function() {
         var options = this.options({
-            out: 'dist/jspipe.js',
-            input: './jspipe.js',
+            out: 'dist/jspipe.es5.js',
+            input: './src/jspipe.js',
             regeneratorOptions: {
                 includeRuntime: true
             }

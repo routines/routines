@@ -9,7 +9,7 @@ module.exports = function(grunt) {
             jspipe: {}
         },
         watch: {
-            files: ['./**/*.js'],
+            files: ['./src/**/*.js'],
             tasks: ['build']
         }
     });
