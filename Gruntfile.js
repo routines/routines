@@ -6,7 +6,15 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         regenerator: {
-            jspipe: {}
+            jspipe: {
+//                options: {
+//                    input: './src/jspipe.js',
+//                    out: './dist/jspipe.es5.js',
+//                    regeneratorOptions: {
+//                        includeRuntime: true
+//                    }
+//                }
+            }
         },
         watch: {
             files: ['./src/**/*.js'],
