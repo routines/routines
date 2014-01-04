@@ -3,6 +3,7 @@
 module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-karma');
 
     grunt.initConfig({
         regenerator: {
@@ -19,6 +20,14 @@ module.exports = function(grunt) {
         watch: {
             files: ['./src/**/*.js'],
             tasks: ['build']
+        },
+        karma: {
+            options: {
+                configFile: 'karma.conf.js'
+            },
+            unit: {
+                browsers: ['PhantomJS']
+            }
         }
     });
 
@@ -26,4 +35,5 @@ module.exports = function(grunt) {
     grunt.loadTasks('tasks');
     grunt.registerTask('default', ['regenerator']);
     grunt.registerTask('dev', ['regenerator', 'watch']);
+    grunt.registerTask('test', ['regenerator', 'karma']);
 };

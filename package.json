@@ -19,9 +19,17 @@
     "url": "https://github.com/jspipe/jspipe/issues"
   },
   "dependencies": {
-      "grunt": "*",
-      "grunt-contrib-watch": "*",
-      "regenerator": "*"
+    "grunt": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-karma": "0.7.2",
+    "regenerator": "*"
   },
-  "homepage": "https://github.com/jspipe/jspipe"
+  "homepage": "https://github.com/jspipe/jspipe",
+  "devDependencies": {
+    "karma-jasmine": "~0.1.5",
+    "karma-chrome-launcher": "~0.1.2",
+    "karma-firefox-launcher": "~0.1.3",
+    "karma-coverage": "~0.1",
+    "karma-phantomjs-launcher": "~0.1"
+  }
 }
