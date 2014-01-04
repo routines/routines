@@ -35,7 +35,7 @@
     }
 
 
-    function isGenerator(x) {
+    function isGeneratorFunction(fn) {
         return true;
         // Don't do real checking yet, because it fails
         // in Firefox when using traceur for simulating
@@ -45,20 +45,19 @@
     }
 
     /**
-     * Kick off a job. A job is a generator that runs concurrently
-     * with other jobs.
+     * Kick off a job. A job runs concurrently with other jobs.
      *
      * To communicate and synchronize with another job, communicate via a
      * Pipe.
      */
-    function job(routine, args) {
-        var task,
+    function job(fn, args) {
+        var generator,
             next;
 
-        if (isGenerator(routine)) {
-            task = routine.apply(routine, args);
+        if (isGeneratorFunction(fn)) {
+            generator = fn.apply(fn, args);
             next = function(data) {
-                var nextItem = task.next(data),
+                var nextItem = generator.next(data),
                     done = nextItem.done,
                     value = nextItem.value,
                     res;
@@ -73,7 +72,7 @@
             };
             next();                        
         } else {
-            throw new TypeError('routine must be a generator');
+            throw new TypeError('function must be a generator function, i.e. function* () {...} ');
         }
     }
 
@@ -137,7 +136,7 @@
     /**
      * A pipe is a rendezvous point for two otherwise independently executing jobs.
      * Such communication + synchronization on a pipe requires a sender and receiver.
-     &
+     *
      * A job sends data to a pipe using "yield pipe.put(data)".
      * Another job receives data from a pipe using "yield pipe.get()".
      *
@@ -145,7 +144,7 @@
      * the _rendezvous method transfers the data in the pipe to the receiver and consequently
      * synchronizes the two waiting jobs.
      *
-     *  Once synchronized, the two jobs continue execution. 
+     * Once synchronized, the two jobs continue execution. 
      */
     Pipe.prototype._rendezvous = function() {
         var syncing = this.syncing,
@@ -178,7 +177,9 @@
                 receipt = send(data);
 
                 // Notify the sender that the data has been sent
-                notify && notify(receipt);
+                if (notify) {
+                    notify(receipt);
+                }
             }
 
             this.syncing = false;
@@ -302,17 +303,13 @@
         
         job(function* () {
             var timeoutId,
-                data;
+                data,
+                send = function(data) { output.send(data); };
             
             while (pipe.isOpen) {
                 data = yield pipe.get();
                 clearTimeout(timeoutId);
-
-                timeoutId = setTimeout(function() {
-                    job(function* () {
-                        yield output.put(data);
-                    });
-                }, ms);
+                timeoutId = setTimeout(send.bind(output, data), ms);
             }
 
             output.close();
@@ -377,6 +374,7 @@
     global.JSPipe = {
         job: job,
         Pipe: Pipe,
+        EventPipe: EventPipe,
 
         // Pipe producers
         timeout: timeout,

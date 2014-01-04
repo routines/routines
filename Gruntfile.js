@@ -3,6 +3,8 @@
 module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-karma');
 
     grunt.initConfig({
@@ -17,6 +19,22 @@ module.exports = function(grunt) {
 //                }
             }
         },
+
+        jshint: {
+            options: {
+                esnext: true
+            },
+
+            all: ['src/**/*.js']
+        },
+
+        jasmine: {
+            src: 'dist/**/*.js',
+            options: {
+                specs: 'spec/*-spec.js'
+            }
+        },
+
         watch: {
             files: ['./src/**/*.js'],
             tasks: ['build']
@@ -33,7 +51,12 @@ module.exports = function(grunt) {
 
     // Registers and loads tasks
     grunt.loadTasks('tasks');
-    grunt.registerTask('default', ['regenerator']);
-    grunt.registerTask('dev', ['regenerator', 'watch']);
+
+    grunt.registerTask('default', ['jshint',
+                                   'regenerator']);
+
+    grunt.registerTask('dev', ['jshint',
+                               'regenerator',
+                               'watch']);
     grunt.registerTask('test', ['regenerator', 'karma']);
 };

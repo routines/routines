@@ -1,35 +1,37 @@
 {
-  "name": "jspipe",
-  "version": "0.1.0",
-  "description": "JS/Pipe ========",
-  "main": "jspipe.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/jspipe/jspipe.git"
-  },
-  "keywords": [
-    "async"
-  ],
-  "author": "Joubert Nel",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/jspipe/jspipe/issues"
-  },
-  "dependencies": {
-    "grunt": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-karma": "0.7.2",
-    "regenerator": "*"
-  },
-  "homepage": "https://github.com/jspipe/jspipe",
-  "devDependencies": {
-    "karma-jasmine": "~0.1.5",
-    "karma-chrome-launcher": "~0.1.2",
-    "karma-firefox-launcher": "~0.1.3",
-    "karma-coverage": "~0.1",
-    "karma-phantomjs-launcher": "~0.1"
-  }
+    "name": "jspipe",
+    "version": "0.1.0",
+    "description": "JS/Pipe ========",
+    "main": "jspipe.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/jspipe/jspipe.git"
+    },
+    "keywords": [
+        "async"
+    ],
+    "author": "Joubert Nel",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/jspipe/jspipe/issues"
+    },
+    "dependencies": {
+        "grunt": "*",
+        "regenerator": "*",
+        "grunt-contrib-watch": "*",
+        "grunt-contrib-jshint": "*",
+        "grunt-contrib-jasmine": "*",
+        "grunt-karma": "0.7.2"
+    },
+    "homepage": "https://github.com/jspipe/jspipe",
+    "devDependencies": {
+        "karma-jasmine": "~0.1.5",
+        "karma-chrome-launcher": "~0.1.2",
+        "karma-firefox-launcher": "~0.1.3",
+        "karma-coverage": "~0.1",
+        "karma-phantomjs-launcher": "~0.1"
+    }
 }
