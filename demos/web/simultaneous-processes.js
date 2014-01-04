@@ -16,26 +16,23 @@ function main(Pipe, job, timeout) {
 
     // Process 1
     job(function* () {
-        while (true) {
-            yield timeout(250).get();
-            yield pipe.put(1);
+        while (yield timeout(250).get()) {
+            pipe.send(1);
         }
     });
 
     // Process 2
     job(function* () {
-        while (true) {
-            yield timeout(1000).get();
-            yield pipe.put(2);
+        while (yield timeout(1000).get()) {
+            pipe.send(2);
         }
     });
 
     
     // Process 3
     job(function* () {
-        while (true) {
-            yield timeout(1500).get();
-            yield pipe.put(3);
+        while (yield timeout(1500).get()) {
+            pipe.send(3);
         }
     });
 
@@ -45,9 +42,8 @@ function main(Pipe, job, timeout) {
         var data = [],
             newItem;
 
-        while (true) {
+        while (newItem = yield pipe.get()) {
             out.innerHTML = render(data);
-            newItem = yield pipe.get();
             data.push(newItem);
             data = peekn(data, 10);
         }

@@ -10,17 +10,17 @@ function* main(Pipe, job, timeout, select) {
 
     job(function* () {
         yield timeout(1000).get();
-        yield c1.put('process 1');
+        c1.send('process 1');
     });
 
     job(function* () {
         yield timeout(2000).get();
-        yield c2.put('process 2');        
+        c2.send('process 2');        
     });
 
     job(function* () {
         yield timeout(1500).get();
-        yield c3.put('process 3');
+        c3.send('process 3');
     });
 
 
@@ -42,7 +42,4 @@ function* main(Pipe, job, timeout, select) {
 }
 
 JSPipe.job(main, [JSPipe.Pipe, JSPipe.job, JSPipe.timeout, JSPipe.select]);
-
-
-
 

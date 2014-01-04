@@ -18,10 +18,10 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
         sortedNumbers = sortResult.numbers;
         sortTime = sortResult.time;
 
-        yield log.put('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
-        yield log.put('first: ' + sortedNumbers[0]);
-        yield log.put('last: ' + sortedNumbers[sortedNumbers.length-1]);
-
+        log.send('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
+        log.send('first: ' + sortedNumbers[0]);
+        log.send('last: ' + sortedNumbers[sortedNumbers.length-1]);
+        
         
         ///
         /// Jobs
@@ -32,8 +32,7 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
             var text, p,
                 logDiv = document.getElementById('log');
             
-            while (true) {                
-                text = yield log.get(),
+            while (text = yield log.get()) {                
                 p = document.createElement('p');
                 p.innerHTML = text;
                 logDiv.appendChild(p);            
@@ -58,7 +57,8 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
                 }
             }
 
-            yield log.put('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
+            log.send('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
+            
             yield numbers.put(nums);
         }
 
@@ -71,8 +71,8 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
             start = Date.now();
             nums.sort();
             end = Date.now();
-            yield sorted.put({numbers:nums,
-                              time:end - start});
+            sorted.send({ numbers: nums,
+                          time: end - start });
         }
 
     });
