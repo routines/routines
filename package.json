@@ -20,8 +20,10 @@
   },
   "dependencies": {
       "grunt": "*",
+      "regenerator": "*",
       "grunt-contrib-watch": "*",
-      "regenerator": "*"
+      "grunt-contrib-jshint": "*",
+      "grunt-contrib-jasmine": "*"
   },
   "homepage": "https://github.com/jspipe/jspipe"
 }

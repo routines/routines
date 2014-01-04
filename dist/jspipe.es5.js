@@ -308,7 +308,7 @@
     }
 
 
-    function isGenerator(x) {
+    function isGeneratorFunction(fn) {
         return true;
         // Don't do real checking yet, because it fails
         // in Firefox when using traceur for simulating
@@ -318,20 +318,19 @@
     }
 
     /**
-     * Kick off a job. A job is a generator that runs concurrently
-     * with other jobs.
+     * Kick off a job. A job runs concurrently with other jobs.
      *
      * To communicate and synchronize with another job, communicate via a
      * Pipe.
      */
-    function job(routine, args) {
-        var task,
+    function job(fn, args) {
+        var generator,
             next;
 
-        if (isGenerator(routine)) {
-            task = routine.apply(routine, args);
+        if (isGeneratorFunction(fn)) {
+            generator = fn.apply(fn, args);
             next = function(data) {
-                var nextItem = task.next(data),
+                var nextItem = generator.next(data),
                     done = nextItem.done,
                     value = nextItem.value,
                     res;
@@ -346,7 +345,7 @@
             };
             next();                        
         } else {
-            throw new TypeError('routine must be a generator');
+            throw new TypeError('function must be a generator function, i.e. function* () {...} ');
         }
     }
 
@@ -410,7 +409,7 @@
     /**
      * A pipe is a rendezvous point for two otherwise independently executing jobs.
      * Such communication + synchronization on a pipe requires a sender and receiver.
-     &
+     *
      * A job sends data to a pipe using "yield pipe.put(data)".
      * Another job receives data from a pipe using "yield pipe.get()".
      *
@@ -418,7 +417,7 @@
      * the _rendezvous method transfers the data in the pipe to the receiver and consequently
      * synchronizes the two waiting jobs.
      *
-     *  Once synchronized, the two jobs continue execution. 
+     * Once synchronized, the two jobs continue execution. 
      */
     Pipe.prototype._rendezvous = function() {
         var syncing = this.syncing,
@@ -451,7 +450,9 @@
                 receipt = send(data);
 
                 // Notify the sender that the data has been sent
-                notify && notify(receipt);
+                if (notify) {
+                    notify(receipt);
+                }
             }
 
             this.syncing = false;
@@ -643,42 +644,29 @@
         var output = new Pipe();
         
         job(wrapGenerator.mark(function() {
-            var timeoutId, data;
+            var timeoutId, data, send;
 
             return wrapGenerator(function($ctx) {
                 while (1) switch ($ctx.next) {
                 case 0:
+                    send = function(data) { output.send(data); };
+                case 1:
                     if (!pipe.isOpen) {
-                        $ctx.next = 8;
+                        $ctx.next = 9;
                         break;
                     }
 
-                    $ctx.next = 3;
+                    $ctx.next = 4;
                     return pipe.get();
-                case 3:
+                case 4:
                     data = $ctx.sent;
                     clearTimeout(timeoutId);
-
-                    timeoutId = setTimeout(function() {
-                        job(wrapGenerator.mark(function() {
-                            return wrapGenerator(function($ctx) {
-                                while (1) switch ($ctx.next) {
-                                case 0:
-                                    $ctx.next = 2;
-                                    return output.put(data);
-                                case 2:
-                                case "end":
-                                    return $ctx.stop();
-                                }
-                            }, this);
-                        }));
-                    }, ms);
-
-                    $ctx.next = 0;
+                    timeoutId = setTimeout(send.bind(output, data), ms);
+                    $ctx.next = 1;
                     break;
-                case 8:
-                    output.close();
                 case 9:
+                    output.close();
+                case 10:
                 case "end":
                     return $ctx.stop();
                 }
@@ -791,6 +779,7 @@
     global.JSPipe = {
         job: job,
         Pipe: Pipe,
+        EventPipe: EventPipe,
 
         // Pipe producers
         timeout: timeout,
