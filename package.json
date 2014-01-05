@@ -11,19 +11,23 @@
     "url": "git://github.com/jspipe/jspipe.git"
   },
   "keywords": [
-    "async"
+    "async",
+    "concurrent",
+    "callback"
   ],
   "author": "Joubert Nel",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jspipe/jspipe/issues"
-  },
-  "dependencies": {
+  },    
+  "devDependencies": {
       "grunt": "*",
       "regenerator": "*",
       "grunt-contrib-watch": "*",
       "grunt-contrib-jshint": "*",
-      "grunt-contrib-jasmine": "*"
+      "grunt-contrib-jasmine": "*",
+      "grunt-es6-module-transpiler": "*",
+      "sweet.js": "*"
   },
   "homepage": "https://github.com/jspipe/jspipe"
 }

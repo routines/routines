@@ -1,16 +1,11 @@
-var fs = require('fs');
+var fs = require('fs'),
+    regenerator = require('regenerator');
 
 module.exports = function(grunt) {
     // Building the template file for the regenerator task.
     grunt.registerMultiTask('regenerator', 'Facebook Regenerator.', function() {
-        var options = this.options({
-            out: 'dist/jspipe.es5.js',
-            input: './src/jspipe.js',
-            regeneratorOptions: {
-                includeRuntime: true
-            }
-        });
-        var done = this.async();
+        var options = this.options(),
+            done = this.async();
 
         fs.readFile(options.input, function(err, src) {
             if (err) {
@@ -18,7 +13,7 @@ module.exports = function(grunt) {
                 return;
             }
 
-            var output = require("regenerator")(src.toString(), options.regeneratorOptions);
+            var output = regenerator(src.toString(), options.regeneratorOptions);
 
             fs.writeFile(options.out, output, function(err) {
                 if (err) {

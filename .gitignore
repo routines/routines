@@ -2,3 +2,6 @@
 .idea
 node_modules
 npm-debug.log
+tmp/
+dist-es5/
+dist-es6/
