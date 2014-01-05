@@ -22,7 +22,11 @@ We use Facebook Regenerator.
 1. Clone this repo: `git clone git@github.com:jspipe/jspipe.git`
 2. Install Grunt if necessary: `npm install -g grunt`
 3. Install dev dependencies: `npm install`
-3. Output builds for both ES5 and ES6 environments: `grunt build`
+3. Build: `grunt build`
+
+Both ES5 and ES6 builds are produced (in the dist-es5 and dist-es6 directories respectively) and for each the build output includes modules in the AMD, CommonJS, and module pattern formats. 
+
+
 
 
 
