@@ -84,7 +84,7 @@ module.exports = function(grunt) {
         },
         
         jasmine: {
-            src: 'dist-es5/**/*.js',
+            src: 'dist-es5/jspipe.js',
             options: {
                 specs: 'spec/*-spec.js'
             }
