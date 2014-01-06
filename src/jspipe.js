@@ -61,7 +61,7 @@ function job(fn, args) {
 
             return res;
         };
-        next();                        
+        next();
     } else {
         throw new TypeError('function must be a generator function, i.e. function* () {...} ');
     }
@@ -92,11 +92,12 @@ Pipe.prototype.close = function() {
  * job calls "yield pipe.get()", which will then trigger a rendezvous.
  */
 Pipe.prototype.put = function(data) {
+    var self = this;
     return function(resume) {
-        this.inbox.push(data, resume);
+        self.inbox.push(data, resume);
         // Try to rendezvous with a receiver
-        this._rendezvous();
-    }.bind(this);
+        self._rendezvous();
+    };
 };
 
 Pipe.prototype.waiting = function() {
@@ -112,11 +113,12 @@ Pipe.prototype.waiting = function() {
  * a rendezvous.
  */
 Pipe.prototype.get = function() {
+    var self = this;
     return function(resume) {
-        this.outbox.push(resume);
+        self.outbox.push(resume);
         // Try to rendezvous with sender
-        this._rendezvous();
-    }.bind(this);
+        self._rendezvous();
+    };
 };
 
 Pipe.prototype.send = function(message) {
@@ -135,7 +137,7 @@ Pipe.prototype.send = function(message) {
  * the _rendezvous method transfers the data in the pipe to the receiver and consequently
  * synchronizes the two waiting jobs.
  *
- * Once synchronized, the two jobs continue execution. 
+ * Once synchronized, the two jobs continue execution.
  */
 Pipe.prototype._rendezvous = function() {
     var syncing = this.syncing,
@@ -152,18 +154,18 @@ Pipe.prototype._rendezvous = function() {
         this.syncing = true;
 
         while ((senderWaiting = inbox.length > 0) &&
-               (receiverWaiting = outbox.length > 0)) {  
+               (receiverWaiting = outbox.length > 0)) {
 
             // Get the data that the sender job put in the pipe
             data = inbox.shift();
-            
+
             // Get the method to notify the sender once the data has been
             // delivered to the receiver job
             notify = inbox.shift();
 
             // Get the method used to send the data to the receiver job.
             send = outbox.shift();
-            
+
             // Send the data
             receipt = send(data);
 
@@ -180,7 +182,7 @@ Pipe.prototype._rendezvous = function() {
 
 function EventPipe(el, type, handler) {
     // super
-    Pipe.call(this);        
+    Pipe.call(this);
 
     this._el = el;
     this._type = type;
@@ -196,7 +198,7 @@ EventPipe.prototype.close = function() {
     delete this._type;
     delete this._handler;
     // super
-    Pipe.prototype.close.call(this);        
+    Pipe.prototype.close.call(this);
 };
 
 
@@ -215,7 +217,7 @@ function timeout(ms, interruptor) {
             yield output.put(ms);
         });
     }, ms);
-    
+
     return output;
 }
 
@@ -244,7 +246,7 @@ function jsonp(url, id) {
 
 
 function lazyseq(count, fn) {
-    var output = new Pipe();            
+    var output = new Pipe();
     job(function* () {
         var data,
             i = 0;
@@ -267,12 +269,12 @@ function lazyseq(count, fn) {
 
 function unique(pipe) {
     var output = new Pipe();
-    
+
     job(function* () {
         var isFirstData = true,
             data,
             lastData;
-        
+
         while (pipe.isOpen) {
             data = yield pipe.get();
             if (isFirstData || data !== lastData) {
@@ -283,7 +285,7 @@ function unique(pipe) {
         }
 
         output.close();
-        
+
     });
 
     return output;
@@ -291,12 +293,12 @@ function unique(pipe) {
 
 function pace(ms, pipe) {
     var output = new Pipe();
-    
+
     job(function* () {
         var timeoutId,
             data,
             send = function(data) { output.send(data); };
-        
+
         while (pipe.isOpen) {
             data = yield pipe.get();
             clearTimeout(timeoutId);
@@ -382,5 +384,5 @@ export {
     // Pipe coordination
     sentinel,
     select,
-    range    
+    range
 };

@@ -19,7 +19,7 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jspipe/jspipe/issues"
-  },    
+  },
   "devDependencies": {
       "grunt": "*",
       "regenerator": "*",
@@ -27,7 +27,8 @@
       "grunt-contrib-jshint": "*",
       "grunt-contrib-jasmine": "*",
       "grunt-es6-module-transpiler": "*",
-      "sweet.js": "*"
+      "sweet.js": "*",
+      "express": "*"
   },
   "homepage": "https://github.com/jspipe/jspipe"
 }
