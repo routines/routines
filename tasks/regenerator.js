@@ -7,20 +7,24 @@ module.exports = function(grunt) {
         var options = this.options(),
             done = this.async();
 
-        fs.readFile(options.input, function(err, src) {
-            if (err) {
-                grunt.log.error('Error writing to: ' + [options.input, err].join(' : '));
-                return;
-            }
+        options.files.forEach(function(file) {
 
-            var output = regenerator(src.toString(), options.regeneratorOptions);
-
-            fs.writeFile(options.out, output, function(err) {
+            fs.readFile(file.src, function(err, src) {
                 if (err) {
-                    grunt.log.error('Error writing to: ' + [options.out, err].join(' : '));
+                    grunt.log.error('Error writing to: ' + [file.src, err].join(' : '));
+                    return;
                 }
-                done();
+
+                var output = regenerator(src.toString(), options.regeneratorOptions);
+
+                fs.writeFile(file.dest, output, function(err) {
+                    if (err) {
+                        grunt.log.error('Error writing to: ' + [file.out, err].join(' : '));
+                    }
+                    done();
+                });
             });
+
         });
     });
 };

@@ -78,6 +78,3 @@ function main(Pipe, job, timeout, select) {
 
 JSPipe.job(main, [JSPipe.Pipe, JSPipe.job, JSPipe.timeout, JSPipe.select]);
 
-
-
-

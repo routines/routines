@@ -11,13 +11,28 @@ module.exports = function(grunt) {
         regenerator: {
             jspipe: {
                 options: {
-                    input: './src/jspipe.js',
-                    out: './tmp/jspipe.js',
+                    files: [ { src: 'src/jspipe.js', dest: 'tmp/jspipe.js' } ],
+                    regeneratorOptions: {
+                        includeRuntime: false
+                    }
+                }
+            },
+
+            demos: {
+                options: {
+                    files: [
+                        { src: 'demos/web/autocomplete.js', dest: 'demos/web/autocomplete.es5.js' },
+                        { src: 'demos/web/jobWaitsForAnother.js', dest: 'demos/web/jobWaitsForAnother.es5.js' },
+                        { src: 'demos/web/select.js', dest: 'demos/web/select.es5.js' },
+                        { src: 'demos/web/simultaneous-processes.js', dest: 'demos/web/simultaneous-processes.es5.js' }
+                             
+                    ],
                     regeneratorOptions: {
                         includeRuntime: false
                     }
                 }
             }
+
         },
 
         jshint: {
