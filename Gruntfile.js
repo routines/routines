@@ -5,6 +5,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-es6-module-transpiler');
 
     grunt.initConfig({
@@ -22,20 +23,20 @@ module.exports = function(grunt) {
 
         jshint: {
             options: {
-                esnext: true                
+                esnext: true
             },
 
             all: ['src/**/*.js']
         },
 
-        
+
         transpile: {
 
             commonjs: {
                 type: 'cjs',
                 files: [{ src: ['tmp/jspipe.js'],
                           dest: 'dist-es5/commonjs/jspipe.js' },
-                        
+
                         { src: ['src/jspipe.js'],
                           dest: 'dist-es6/commonjs/jspipe.js' }]
             },
@@ -82,7 +83,7 @@ module.exports = function(grunt) {
                 dest: 'dist-es5/generator-runtime.js'
             }
         },
-        
+
         jasmine: {
             src: 'dist-es5/jspipe.js',
             options: {
@@ -93,12 +94,20 @@ module.exports = function(grunt) {
         watch: {
             files: ['./src/**/*.js'],
             tasks: ['build']
+        },
+        karma: {
+            options: {
+                configFile: 'karma.conf.js'
+            },
+            unit: {
+                browsers: ['Chrome']
+            }
         }
     });
 
     // Registers and loads tasks
     grunt.loadTasks('tasks');
-    
+
     grunt.registerTask('default', ['jshint',
                                    'ensureBuildDirectories',
                                    'regenerator',
@@ -106,7 +115,7 @@ module.exports = function(grunt) {
                                    'browser',
                                    'transpile' ]);
 
-    
+
 
     grunt.registerTask('dev', ['jshint',
                                'ensureBuildDirectories',
@@ -115,4 +124,5 @@ module.exports = function(grunt) {
                                'browser',
                                'transpile',
                                'watch']);
+    grunt.registerTask('test', ['regenerator', 'karma']);
 };

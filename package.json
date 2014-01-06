@@ -19,7 +19,7 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jspipe/jspipe/issues"
-  },    
+  },
   "devDependencies": {
       "grunt": "*",
       "regenerator": "*",
@@ -27,7 +27,14 @@
       "grunt-contrib-jshint": "*",
       "grunt-contrib-jasmine": "*",
       "grunt-es6-module-transpiler": "*",
-      "sweet.js": "*"
+      "sweet.js": "*",
+      "karma-jasmine": "~0.1.5",
+      "karma-chrome-launcher": "~0.1.2",
+      "karma-firefox-launcher": "~0.1.3",
+      "karma-coverage": "~0.1",
+      "karma-phantomjs-launcher": "~0.1",
+      "express": "*",
+      "grunt-express-server": "0.4.11"
   },
   "homepage": "https://github.com/jspipe/jspipe"
 }
