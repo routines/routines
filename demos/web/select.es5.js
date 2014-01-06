@@ -22,9 +22,8 @@ function main(Pipe, job, timeout, select) {
                         $ctx.next = 2;
                         return timeout(1000).get();
                     case 2:
-                        $ctx.next = 4;
-                        return c1.put('process 1');
-                    case 4:
+                        c1.send('process 1');
+                    case 3:
                     case "end":
                         return $ctx.stop();
                     }
@@ -38,9 +37,8 @@ function main(Pipe, job, timeout, select) {
                         $ctx.next = 2;
                         return timeout(2000).get();
                     case 2:
-                        $ctx.next = 4;
-                        return c2.put('process 2');
-                    case 4:
+                        c2.send('process 2');
+                    case 3:
                     case "end":
                         return $ctx.stop();
                     }
@@ -54,9 +52,8 @@ function main(Pipe, job, timeout, select) {
                         $ctx.next = 2;
                         return timeout(1500).get();
                     case 2:
-                        $ctx.next = 4;
-                        return c3.put('process 3');
-                    case 4:
+                        c3.send('process 3');
+                    case 3:
                     case "end":
                         return $ctx.stop();
                     }

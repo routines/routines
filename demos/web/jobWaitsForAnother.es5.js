@@ -19,11 +19,10 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
                             start = Date.now();
                             nums.sort();
                             end = Date.now();
-                            $ctx.next = 8;
 
-                            return sorted.put({numbers:nums,
-                                              time:end - start})
-                        case 8:
+                            sorted.send({ numbers: nums,
+                                          time: end - start });
+                        case 7:
                         case "end":
                             return $ctx.stop();
                         }
@@ -57,12 +56,10 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
                             $ctx.next = 1;
                             break;
                         case 8:
-                            $ctx.next = 10;
-                            return log.put('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
-                        case 10:
-                            $ctx.next = 12;
+                            log.send('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
+                            $ctx.next = 11;
                             return numbers.put(nums);
-                        case 12:
+                        case 11:
                         case "end":
                             return $ctx.stop();
                         }
@@ -77,21 +74,20 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
                         case 0:
                             logDiv = document.getElementById('log');
                         case 1:
-                            if (!true) {
-                                $ctx.next = 10;
+                            $ctx.next = 3;
+                            return log.get();
+                        case 3:
+                            if (!(text = $ctx.sent)) {
+                                $ctx.next = 9;
                                 break;
                             }
 
-                            $ctx.next = 4;
-                            return log.get();
-                        case 4:
-                            text = $ctx.sent;
                             p = document.createElement('p');
                             p.innerHTML = text;
                             logDiv.appendChild(p);
                             $ctx.next = 1;
                             break;
-                        case 10:
+                        case 9:
                         case "end":
                             return $ctx.stop();
                         }
@@ -108,15 +104,10 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
                 sortResult = $ctx.sent;
                 sortedNumbers = sortResult.numbers;
                 sortTime = sortResult.time;
-                $ctx.next = 14;
-                return log.put('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
-            case 14:
-                $ctx.next = 16;
-                return log.put('first: ' + sortedNumbers[0]);
-            case 16:
-                $ctx.next = 18;
-                return log.put('last: ' + sortedNumbers[sortedNumbers.length-1]);
-            case 18:
+                log.send('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
+                log.send('first: ' + sortedNumbers[0]);
+                log.send('last: ' + sortedNumbers[sortedNumbers.length-1]);
+            case 15:
             case "end":
                 return $ctx.stop();
             }
