@@ -222,11 +222,12 @@ function timeout(ms, interruptor) {
 }
 
 
-function listen(el, type) {
+function listen(el, type, preventDefault) {
     var handler = function(e) {
-        job(function* () {
-            yield output.put(e);
-        });
+        if (preventDefault) {
+            e.preventDefault();
+        }
+        output.send(e);
     };
 
     var output = new EventPipe(el, type, handler);

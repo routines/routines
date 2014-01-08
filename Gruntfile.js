@@ -37,20 +37,20 @@ module.exports = function(grunt) {
 
         jshint: {
             options: {
-                esnext: true                
+                esnext: true
             },
 
             all: ['src/**/*.js']
         },
 
-        
+
         transpile: {
 
             commonjs: {
                 type: 'cjs',
                 files: [{ src: ['tmp/jspipe.js'],
                           dest: 'dist-es5/commonjs/jspipe.js' },
-                        
+
                         { src: ['src/jspipe.js'],
                           dest: 'dist-es6/commonjs/jspipe.js' }]
             },
@@ -97,37 +97,36 @@ module.exports = function(grunt) {
                 dest: 'dist-es5/generator-runtime.js'
             }
         },
-        
+
         jasmine: {
-            src: 'dist-es5/jspipe.js',
+            src: './dist-es5/jspipe.js',
             options: {
-                specs: 'spec/*-spec.js'
+                specs: './spec/*-spec.js'
             }
         },
+
 
         watch: {
             files: ['./src/**/*.js'],
             tasks: ['build']
         }
+
     });
 
     // Registers and loads tasks
     grunt.loadTasks('tasks');
-    
-    grunt.registerTask('default', ['jshint',
+
+    grunt.registerTask('build', ['jshint',
                                    'ensureBuildDirectories',
                                    'regenerator',
                                    'createGeneratorRuntime',
                                    'browser',
-                                   'transpile' ]);
+                                   'transpile'
+                                ]);
 
+
+
+    grunt.registerTask('dev', ['build', 'watch']);
     
-
-    grunt.registerTask('dev', ['jshint',
-                               'ensureBuildDirectories',
-                               'regenerator',
-                               'createGeneratorRuntime',
-                               'browser',
-                               'transpile',
-                               'watch']);
+    grunt.registerTask('default', ['build']);
 };
