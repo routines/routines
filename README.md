@@ -12,8 +12,7 @@ Read more and see live examples at http://jspipe.org
 
 ### Building
 1. Clone this repo: `git clone git@github.com:jspipe/jspipe.git`
-2. Install Grunt if necessary: `npm install -g grunt`
-3. Install dev dependencies: `sh init.sh`
+2. Install dev dependencies: `sh init.sh`
 3. Build: `grunt build`
 
 Both ES5 and ES6 builds are produced (in the /dist-es5 and /dist-es6 directories respectively) and for each the build output includes modules in the AMD, CommonJS, and module pattern formats. 
@@ -28,20 +27,20 @@ To use JS/Pipe, simply build it by running `grunt build`, and picking one of the
 The build produces three outputs: AMD, CommonJS, and module pattern format. 
 
 #### All other browsers
-The build produces not only ES6 code in /dist-es6, but also ES5-compatible code in /dist-es5. The ES5 code is produced by transpiling the ES6 source code using Facebook's regenerator, which converts generator syntax into a state machine. The /dist-es5 folder also includes generator-runtime.js, which you must include in your ES5 project.
+The build produces not only ES6 code in /dist-es6, but also ES5-compatible code in /dist-es5. The ES5 code is produced by transpiling the ES6 source code using Facebook's Regenerator, which converts generator syntax into a state machine. The /dist-es5 folder also includes generator-runtime.js, which you must include in your ES5 project.
 
 To run your project that uses JS/Pipes in non-ES6 browsers, you need to include the following scripts:
 a) jspipe.js from /dist-es5
 b) generator-runtime.js from /dist-es5
-c) your script, transpiled using Facebook regenerator
+c) your script, transpiled using Facebook Regenerator
 
-You can get Facebook regenerator by running `npm install -g regenerator`. It is hosted at https://github.com/facebook/regenerator
+You can get Facebook Regenerator by running `npm install -g regenerator`. It is hosted at https://github.com/facebook/regenerator
 
 
 ### Node
 JS/Pipe is published as an NPM package for Node 0.11.10+ when running with the --harmony flag.
 
-npm install jspipe
+`npm install jspipe`
 
 
 ## Generators
@@ -65,7 +64,7 @@ JS/Pipe may be used for any purpose, including commercial purposes, at absolutel
 No paperwork, no royalties, no GNU-like "copyleft" restrictions, either.
 Just download it and use it.
 
-Copyright (c) 2013 Joubert Nel
+Copyright (c) 2013, 2014 Joubert Nel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
