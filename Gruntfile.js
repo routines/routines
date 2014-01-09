@@ -25,7 +25,7 @@ module.exports = function(grunt) {
                         { src: 'demos/web/jobWaitsForAnother.js', dest: 'demos/web/jobWaitsForAnother.es5.js' },
                         { src: 'demos/web/select.js', dest: 'demos/web/select.es5.js' },
                         { src: 'demos/web/simultaneous-processes.js', dest: 'demos/web/simultaneous-processes.es5.js' }
-                             
+                        
                     ],
                     regeneratorOptions: {
                         includeRuntime: false
@@ -98,6 +98,7 @@ module.exports = function(grunt) {
             }
         },
 
+
         jasmine: {
             src: './dist-es5/jspipe.js',
             options: {
@@ -117,11 +118,11 @@ module.exports = function(grunt) {
     grunt.loadTasks('tasks');
 
     grunt.registerTask('build', ['jshint',
-                                   'ensureBuildDirectories',
-                                   'regenerator',
-                                   'createGeneratorRuntime',
-                                   'browser',
-                                   'transpile'
+                                 'ensureBuildDirectories',
+                                 'regenerator',
+                                 'createGeneratorRuntime',
+                                 'browser',
+                                 'transpile'
                                 ]);
 
 

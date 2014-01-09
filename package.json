@@ -1,33 +1,52 @@
 {
-  "name": "jspipe",
-  "version": "0.1.0",
-  "description": "JS/Pipe ========",
-  "main": "jspipe.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/jspipe/jspipe.git"
-  },
-  "keywords": [
-    "async",
-    "concurrent",
-    "callback"
-  ],
-  "author": "Joubert Nel",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/jspipe/jspipe/issues"
-  },
-  "devDependencies": {
-      "grunt": "*",
-      "regenerator": "*",
-      "grunt-contrib-watch": "*",
-      "grunt-contrib-jshint": "*",
-      "grunt-contrib-jasmine": "*",
-      "grunt-es6-module-transpiler": "*",
-      "sweet.js": "*"
-  },
-  "homepage": "https://github.com/jspipe/jspipe"
+    "name": "jspipe",
+    "version": "0.1.0",
+    "description": "JS/Pipe - coordinating asynchronous code without callbacks or chained functions",
+    "main": "jspipe.js",
+    
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/jspipe/jspipe.git"
+    },
+
+    "main": "./dist-es6/commonjs/jspipe.js",
+
+    "engines": {
+        "node": ">=0.11"
+    },
+    
+    "keywords": [
+        "asynchronous",
+        "concurrent",
+        "callback",
+        "promises",
+        "chain",
+        "goroutine",
+        "channel",
+        "es6",
+        "generator"
+    ],
+    
+    "author": "Joubert Nel",
+    "license": "MIT",
+    
+    "bugs": {
+        "url": "https://github.com/jspipe/jspipe/issues"
+    },
+    
+    "devDependencies": {
+        "grunt": "*",
+        "regenerator": "*",
+        "grunt-contrib-watch": "*",
+        "grunt-contrib-jshint": "*",
+        "grunt-contrib-jasmine": "*",
+        "grunt-es6-module-transpiler": "*",
+        "sweet.js": "*"
+    },
+    
+    "homepage": "http://jspipe.org"
 }
