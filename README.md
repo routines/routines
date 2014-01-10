@@ -1,6 +1,6 @@
 # JS/Pipe
 
-JS/Pipe provides JavaScript primitives make it possible to *coordinate asynchronous code* without callbacks or chained functions.
+JS/Pipe provides JavaScript primitives that make it possible to *coordinate asynchronous code* without callbacks or chained functions.
 
 As a result, stack traces are crystal clear so debugging is easy.
 
