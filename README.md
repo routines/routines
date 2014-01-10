@@ -1,8 +1,8 @@
 # JS/Pipe
 
-JS/Pipe is a minimal library that makes it easy to *coordinate asynchronous code* without callbacks or chained functions.
+JS/Pipe provides JavaScript primitives make it possible to *coordinate asynchronous code* without callbacks or chained functions.
 
-As a result, stack traces are crystal clear so debugging is easy. You can also use try/catch to manage error handling.
+As a result, stack traces are crystal clear so debugging is easy.
 
 JS/Pipe is inspired by Goroutines and Channels, found in the Go language. 
 
@@ -41,6 +41,10 @@ You can get Facebook Regenerator by running `npm install -g regenerator`. It is 
 JS/Pipe is published as an NPM package for Node 0.11.10+ when running with the --harmony flag.
 
 `npm install jspipe`
+
+
+## Examples
+You can find examples in /demos/web/es6, and the transipiled versions in /demos/web/es5.
 
 
 ## Generators
