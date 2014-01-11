@@ -1,3 +1,5 @@
+/*globals describe, beforeEach, it, expect, spyOn, JSPipe */
+
 
 describe('JSPipe.Pipe', function() {
     var p;
@@ -16,6 +18,22 @@ describe('JSPipe.Pipe', function() {
                 expect(typeof ret).toEqual('function');
             });
 
+            describe('invocation', function() {
+
+                it('pushes data argument and resume argument into the inbox', function() {
+                    var ret = p.put('data');
+                    ret('resume');
+                    expect(p.inbox).toEqual(['data', 'resume']);                    
+                });
+                
+                it('calls _rendezvous()', function() {
+                    var ret = p.put();
+                    spyOn(p, '_rendezvous').andCallThrough();
+                    ret();
+                    expect(p._rendezvous).toHaveBeenCalled();
+                });
+            });
+
         });
 
     });
@@ -30,18 +48,39 @@ describe('JSPipe.Pipe', function() {
                 expect(typeof ret).toEqual('function');
             });
 
+            describe('invocation', function() {
+
+                it('pushes resume argument into the outbox', function() {
+                    var ret = p.get();
+                    ret('getResume');
+                    expect(p.outbox).toEqual(['getResume']);
+                });
+
+                it('calls _rendezvous()', function() {
+                    var ret = p.get();
+                    spyOn(p, '_rendezvous').andCallThrough();
+                    ret();
+                    expect(p._rendezvous).toHaveBeenCalled();
+                });
+            });
+
         });
 
     });
 
     describe('send', function() {
 
-        it('calls put', function() {
-            spyOn(p, 'put').andCallThrough();
+        it('pushes the data into the inbox and an undefined resume', function() {
+            var expected = ['test', undefined];
             p.send('test');
-            expect(p.put).toHaveBeenCalledWith('test');
+            expect(p.inbox).toEqual(expected);
         });
 
+        it('calls _rendezvous()', function() {
+            spyOn(p, '_rendezvous').andCallThrough();
+            p.send('some data');
+            expect(p._rendezvous).toHaveBeenCalled();
+        });
 
     });
 
@@ -61,6 +100,39 @@ describe('JSPipe.Pipe', function() {
     });
 
     describe('_rendezvous', function() {
+        var data = 'some data',
+            senderExpected,
+            receiverExpected,
+            senderActual,
+            receiverActual;                    
+
+        function notify() {
+            senderActual.push('didSend');
+        }
+
+        function send(data) {
+            receiverActual.push(data);
+        }
+
+        beforeEach(function() {
+            senderExpected = ['didSend'];
+            receiverExpected = [data];
+            senderActual = [];
+            receiverActual = [];
+            
+            p.inbox = [data, notify];
+            p.outbox = [send];
+        });
+
+        it('sends data placed in the inbox to the function in the outbox', function() {
+            p._rendezvous();
+            expect(receiverActual).toEqual(receiverExpected);
+        });
+
+        it('notifies the sender that the data was delivered', function() {
+            p._rendezvous();
+            expect(senderActual).toEqual(senderExpected);
+        });
 
     });
 });
