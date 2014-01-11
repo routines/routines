@@ -1,4 +1,5 @@
-
+/*globals describe, jasmine, it, expect, JSPipe */
+ 
 describe('JSPipe.EventPipe', function() {
 
     var pseudoElement = jasmine.createSpyObj('pseudoElement', ['addEventListener', 'removeEventListener']),

@@ -213,9 +213,8 @@ function timeout(ms, interruptor) {
     var output = new Pipe();
 
     setTimeout(function() {
-        job(function* () {
-            yield output.put(ms);
-        });
+        output.send(ms);
+        output.close();
     }, ms);
 
     return output;
@@ -231,17 +230,6 @@ function listen(el, type, preventDefault) {
     };
 
     var output = new EventPipe(el, type, handler);
-    return output;
-}
-
-function jsonp(url, id) {
-    var output = new Pipe();
-    $.getJSON(url, function(data) {
-        job(function* () {
-            yield output.put({ data: data,
-                               id: id });
-        });
-    });
     return output;
 }
 

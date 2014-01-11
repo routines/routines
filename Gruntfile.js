@@ -14,7 +14,9 @@ module.exports = function(grunt) {
                     files: [
                         { src: 'src/jspipe.js', dest: 'tmp/jspipe.js' },
                         { src: 'spec/job-spec.js', dest: 'spec-es5/job-spec.js' },
-                        { src: 'spec/pipe-spec.js', dest: 'spec-es5/pipe-spec.js' }
+                        { src: 'spec/pipe-spec.js', dest: 'spec-es5/pipe-spec.js' },
+                        { src: 'spec/pipe_producers-spec.js', dest: 'spec-es5/pipe_producers-spec.js' },
+                        { src: 'spec/eventpipe-spec.js', dest: 'spec-es5/eventpipe-spec.js' }
                     ],
                     regeneratorOptions: {
                         includeRuntime: false
