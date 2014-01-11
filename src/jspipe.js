@@ -362,7 +362,6 @@ export {
     // Pipe producers
     timeout,
     listen,
-    jsonp,
     lazyseq,
 
     // Pipe transformers
