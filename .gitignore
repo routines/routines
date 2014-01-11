@@ -6,4 +6,5 @@ static/coverage/npm-debug.log
 tmp/
 dist-es5/
 dist-es6/
+spec-es5/
 .grunt/

@@ -11,20 +11,25 @@ module.exports = function(grunt) {
         regenerator: {
             jspipe: {
                 options: {
-                    files: [ { src: 'src/jspipe.js', dest: 'tmp/jspipe.js' } ],
+                    files: [
+                        { src: 'src/jspipe.js', dest: 'tmp/jspipe.js' },
+                        { src: 'spec/job-spec.js', dest: 'spec-es5/job-spec.js' },
+                        { src: 'spec/pipe-spec.js', dest: 'spec-es5/pipe-spec.js' }
+                    ],
                     regeneratorOptions: {
                         includeRuntime: false
                     }
                 }
             },
 
+
             demos: {
                 options: {
                     files: [
-                        { src: 'demos/web/autocomplete.js', dest: 'demos/web/autocomplete.es5.js' },
-                        { src: 'demos/web/jobWaitsForAnother.js', dest: 'demos/web/jobWaitsForAnother.es5.js' },
-                        { src: 'demos/web/select.js', dest: 'demos/web/select.es5.js' },
-                        { src: 'demos/web/simultaneous-processes.js', dest: 'demos/web/simultaneous-processes.es5.js' }
+                        { src: 'demos/web/es6/autocomplete.js', dest: 'demos/web/es5/autocomplete.js' },
+                        { src: 'demos/web/es6/jobWaitsForAnother.js', dest: 'demos/web/es5/jobWaitsForAnother.js' },
+                        { src: 'demos/web/es6/select.js', dest: 'demos/web/es5/select.js' },
+                        { src: 'demos/web/es6/simultaneous-processes.js', dest: 'demos/web/es5/simultaneous-processes.js' }
                         
                     ],
                     regeneratorOptions: {
@@ -100,9 +105,10 @@ module.exports = function(grunt) {
 
 
         jasmine: {
-            src: './dist-es5/jspipe.js',
+            src: ['dist-es5/generator-runtime.js',
+                  'dist-es5/jspipe.js'],
             options: {
-                specs: './spec/*-spec.js'
+                specs: 'spec-es5/*-spec.js'
             }
         },
 
@@ -119,12 +125,12 @@ module.exports = function(grunt) {
 
     grunt.registerTask('build', ['jshint',
                                  'ensureBuildDirectories',
+                                 'ensureSpecDirectories',
                                  'regenerator',
                                  'createGeneratorRuntime',
                                  'browser',
                                  'transpile'
                                 ]);
-
 
 
     grunt.registerTask('dev', ['build', 'watch']);
