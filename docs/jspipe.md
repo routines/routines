@@ -2,7 +2,7 @@
 
 <!-- Start src/jspipe.js -->
 
-## job(generator, args)
+## job(fn, args)
 
 Run a generator function `fn` as a concurrent job.
 
@@ -42,9 +42,9 @@ using `put` (or `send`) and receive data using `get`.
 
 ### Params: 
 
-* **Function*** *generator* function to execute as a concurrent job
+* **Function*** *fn* A generator function to execute as a concurrent job
 
-* **Array** *args* parameters to pass to `fn`
+* **Array** *args* Parameters to pass to `fn`
 
 ## Pipe()
 
