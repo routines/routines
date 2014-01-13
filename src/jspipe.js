@@ -72,8 +72,8 @@ function isGeneratorFunction(fn) {
  * To communicate and synchronize between jobs, send data through a `Pipe`
  * using `put` (or `send`) and receive data using `get`.
  *
- * @param {Function*} generator function to execute as a concurrent job
- * @param {Array} args parameters to pass to `fn`
+ * @param {Function*} fn A generator function to execute as a concurrent job
+ * @param {Array} args Parameters to pass to `fn`
  * @api public
  */
 function job(fn, args) {
