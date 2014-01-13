@@ -6,6 +6,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-es6-module-transpiler');
+    grunt.loadNpmTasks('grunt-markdox');
 
     grunt.initConfig({
         regenerator: {
@@ -102,6 +103,14 @@ module.exports = function(grunt) {
         createGeneratorRuntime: {
             options: {
                 dest: 'dist-es5/generator-runtime.js'
+            }
+        },
+
+
+        markdox: {
+            jspipe: {
+                src: 'src/jspipe.js',
+                dest: 'docs/jspipe.md'
             }
         },
 

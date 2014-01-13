@@ -45,7 +45,8 @@
         "grunt-contrib-jshint": "*",
         "grunt-contrib-jasmine": "*",
         "grunt-es6-module-transpiler": "*",
-        "sweet.js": "*"
+        "grunt-markdox": "*",
+        "sweet.js": "*"        
     },
     
     "homepage": "http://jspipe.org"

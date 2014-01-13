@@ -36,10 +36,43 @@ function isGeneratorFunction(fn) {
 }
 
 /**
- * Kick off a job. A job runs concurrently with other jobs.
+ * Run a generator function `fn` as a concurrent job.
  *
- * To communicate and synchronize with another job, communicate via a
- * Pipe.
+ * ### Examples:
+ *
+ * var pipe = new JSPipe.Pipe();
+ *
+ * JSPipe.job(function* () {
+ *   pipe.send('job 1');
+ * });
+ *
+ * JSPipe.job(function* () {
+ *     while (true) {
+ *         yield JSPipe.timeout(250).get();
+ *         pipe.send('job 2');
+ *     }
+ * });
+ *
+ * JSPipe.job(function* () {
+ *     while (true) {
+ *         yield JSPipe.timeout(400).get();
+ *         pipe.send('job 3');
+ *     }
+ * });
+ *
+ * JSPipe.job(function* () {
+ *     var data;
+ *     while (data = yield pipe.get()) {
+ *         console.log(data);
+ *     }
+ * }); 
+ *
+ * To communicate and synchronize between jobs, send data through a `Pipe`
+ * using `put` (or `send`) and receive data using `get`.
+ *
+ * @param {Function*} generator function to execute as a concurrent job
+ * @param {Array} args parameters to pass to `fn`
+ * @api public
  */
 function job(fn, args) {
     var generator,
