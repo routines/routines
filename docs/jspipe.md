@@ -6,8 +6,9 @@
 
 Run a generator function `fn` as a concurrent job.
 
-### Examples:
+### Example:
 
+```
 var pipe = new JSPipe.Pipe();
 
 JSPipe.job(function* () {
@@ -33,7 +34,8 @@ JSPipe.job(function* () {
     while (data = yield pipe.get()) {
         console.log(data);
     }
-}); 
+});
+```
 
 To communicate and synchronize between jobs, send data through a `Pipe`
 using `put` (or `send`) and receive data using `get`.
