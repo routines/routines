@@ -38,27 +38,26 @@ function isGeneratorFunction(fn) {
 /**
  * Run a generator function `fn` as a concurrent job.
  *
- * ### Example:
- *
+ * #### Example:
  * ```
  * var pipe = new JSPipe.Pipe();
  *
  * JSPipe.job(function* () {
- *   pipe.send('job 1');
+ *     pipe.send(1);
  * });
  *
  * JSPipe.job(function* () {
  *     while (true) {
  *         yield JSPipe.timeout(250).get();
- *         pipe.send('job 2');
+ *         pipe.send(2);
  *     }
  * });
  *
  * JSPipe.job(function* () {
- *     while (true) {
- *         yield JSPipe.timeout(400).get();
- *         pipe.send('job 3');
- *     }
+ *    while (true) {
+ *        yield JSPipe.timeout(400).get();
+ *        pipe.send(3);
+ *    }
  * });
  *
  * JSPipe.job(function* () {
@@ -72,7 +71,7 @@ function isGeneratorFunction(fn) {
  * To communicate and synchronize between jobs, send data through a `Pipe`
  * using `put` (or `send`) and receive data using `get`.
  *
- * @param {Function*} fn A generator function to execute as a concurrent job
+ * @param {Function} fn A generator function to execute as a concurrent job
  * @param {Array} args Parameters to pass to `fn`
  * @api public
  */
@@ -103,10 +102,23 @@ function job(fn, args) {
 }
 
 /**
- * A pipe provides a way for two jobs to communicate data + synchronize their execution.
+ * A pipe provides a way for two jobs to communicate data and synchronize their execution.
+ * One job can send data into the pipe by calling `yield pipe.put(data)` or `pipe.send(data)`
+ * and another job can receive data by calling `yield pipe.get()`.
  *
- * One job can send data by calling "yield pipe.put(data)" and another job can
- * receive data by calling "yield pipe.get()".
+ * Once both a sender job and a receiver job are waiting on the pipe a rendezvous occurs,
+ * transferring the data in the pipe to the receiver and consequently synchronizing the two
+ * waiting jobs.
+ * 
+ * Once synchronized, the two jobs continue execution.
+ *
+ * #### Example:
+ * ```
+ * var pipe = new Pipe();
+ * ```
+ *
+ * @class Pipe
+ * @constructor
  */
 function Pipe() {
     this.syncing = false;
@@ -115,104 +127,136 @@ function Pipe() {
     this.isOpen = true;
 }
 
-Pipe.prototype.close = function() {
-    this.isOpen = false;
-};
+(function(proto) {
 
-/**
- * Call "yield pipe.put(data)" from a job (the sender) to put data in the pipe.
- *
- * The put method will then try to rendezvous with a receiver job, if any.
- * If there is no receiver waiting for data, the sender will pause until another
- * job calls "yield pipe.get()", which will then trigger a rendezvous.
- */
-Pipe.prototype.put = function(data) {
-    var self = this;
-    return function(resume) {
-        self.inbox.push(data, resume);
-        // Try to rendezvous with a receiver
-        self._rendezvous();
+    /**
+     * Mark the pipe as closed.
+     * 
+     * @method Pipe.close
+     */
+    proto.close = function() {
+        this.isOpen = false;
     };
-};
 
-Pipe.prototype.waiting = function() {
-    return this.outbox.length;
-};
-
-/**
- * Call "yield pipe.get()" from a job (the receiver) to get data from the pipe.
- *
- * The get method will then try to rendezvous with a sender job, if any.
- * If there is no sender waiting for the data it sent to be delivered, the receiver will
- * pause until another job calls "yield pipe.put(data)", which will then trigger
- * a rendezvous.
- */
-Pipe.prototype.get = function() {
-    var self = this;
-    return function(resume) {
-        self.outbox.push(resume);
-        // Try to rendezvous with sender
-        self._rendezvous();
+    /**
+     * Call `yield pipe.put(data)` from a job (the sender) to put data in the pipe.
+     *
+     * The put method will then try to rendezvous with a receiver job, if any.
+     * If there is no receiver waiting for data, the sender will pause until another
+     * job calls `yield pipe.get()`, which will then trigger a rendezvous.
+     *
+     * #### Example
+     * ```
+     * job(function* () {
+     *     yield pipe.put(42);
+     * });
+     * ```
+     *
+     * @method Pipe.put
+     * @param {AnyType} data The data to put into the pipe. 
+     */
+    proto.put = function(data) {
+        var self = this;
+        return function(resume) {
+            self.inbox.push(data, resume);
+            // Try to rendezvous with a receiver
+            rendezvous(self);
+        };
     };
-};
 
-Pipe.prototype.send = function(message) {
-    this.put(message)();
-};
+    proto.waiting = function() {
+        return this.outbox.length;
+    };
+
+    /**
+     * Call `yield pipe.get()` from a job (the receiver) to get data from the pipe.
+     *
+     * The get method will then try to rendezvous with a sender job, if any.
+     * If there is no sender waiting for the data it sent to be delivered, the receiver will
+     * pause until another job calls `yield pipe.put(data)`, which will then trigger
+     * a rendezvous.
+     *
+     * #### Example:
+     * ```
+     * job(function* () {
+     *     var data;
+     *     while (data = yield pipe.get()) {
+     *         console.log(data);
+     *     }
+     * });
+     * ```
+     *
+     * @method Pipe.get
+     * @return {AnyType} The data that was received from the pipe.
+     */
+    proto.get = function() {
+        var self = this;
+        return function(resume) {
+            self.outbox.push(resume);
+            // Try to rendezvous with sender
+            rendezvous(self);
+        };
+    };
 
 
-/**
- * A pipe is a rendezvous point for two otherwise independently executing jobs.
- * Such communication + synchronization on a pipe requires a sender and receiver.
- *
- * A job sends data to a pipe using "yield pipe.put(data)".
- * Another job receives data from a pipe using "yield pipe.get()".
- *
- * Once both a sender job and a receiver job are waiting on the pipe,
- * the _rendezvous method transfers the data in the pipe to the receiver and consequently
- * synchronizes the two waiting jobs.
- *
- * Once synchronized, the two jobs continue execution.
- */
-Pipe.prototype._rendezvous = function() {
-    var syncing = this.syncing,
-        inbox = this.inbox,
-        outbox = this.outbox,
-        data,
-        notify,
-        send,
-        receipt,
-        senderWaiting,
-        receiverWaiting;
+    /**
+     * Like `put`, but non-blocking. Unlike `put`, do not call with `yield`.
+     *
+     * #### Example:
+     * ```
+     * pipe.send(42);
+     * ```
+     * 
+     * @method Pipe.send
+     * @param {AnyType} data The data to put in the pipe.
+     */
+    proto.send = function(data) {
+        this.put(data)();
+    };
 
-    if (!syncing) {
-        this.syncing = true;
 
-        while ((senderWaiting = inbox.length > 0) &&
-               (receiverWaiting = outbox.length > 0)) {
+    function rendezvous(pipe) {
+        var syncing = pipe.syncing,
+            inbox = pipe.inbox,
+            outbox = pipe.outbox,
+            data,
+            notify,
+            send,
+            receipt,
+            senderWaiting,
+            receiverWaiting;
 
-            // Get the data that the sender job put in the pipe
-            data = inbox.shift();
+        if (!syncing) {
+            pipe.syncing = true;
 
-            // Get the method to notify the sender once the data has been
-            // delivered to the receiver job
-            notify = inbox.shift();
+            while ((senderWaiting = inbox.length > 0) &&
+                   (receiverWaiting = outbox.length > 0)) {
 
-            // Get the method used to send the data to the receiver job.
-            send = outbox.shift();
+                // Get the data that the sender job put in the pipe
+                data = inbox.shift();
 
-            // Send the data
-            receipt = send(data);
+                // Get the method to notify the sender once the data has been
+                // delivered to the receiver job
+                notify = inbox.shift();
 
-            // Notify the sender that the data has been sent
-            if (notify) {
-                notify(receipt);
+                // Get the method used to send the data to the receiver job.
+                send = outbox.shift();
+
+                // Send the data
+                receipt = send(data);
+
+                // Notify the sender that the data has been sent
+                if (notify) {
+                    notify(receipt);
+                }
             }
-        }
 
-        this.syncing = false;
+            pipe.syncing = false;
+        }
     }
-};
+
+})(Pipe.prototype);
+
 
 
 function EventPipe(el, type, handler) {

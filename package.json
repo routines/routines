@@ -44,6 +44,7 @@
         "grunt-contrib-watch": "*",
         "grunt-contrib-jshint": "*",
         "grunt-contrib-jasmine": "*",
+        "grunt-contrib-clean": "*",
         "grunt-es6-module-transpiler": "*",
         "grunt-markdox": "*",
         "sweet.js": "*"        

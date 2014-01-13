@@ -5,10 +5,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-es6-module-transpiler');
     grunt.loadNpmTasks('grunt-markdox');
 
     grunt.initConfig({
+        clean: {
+            docs: ['docs/']
+        },
+        
         regenerator: {
             jspipe: {
                 options: {
@@ -106,15 +111,6 @@ module.exports = function(grunt) {
             }
         },
 
-
-        markdox: {
-            jspipe: {
-                src: 'src/jspipe.js',
-                dest: 'docs/jspipe.md'
-            }
-        },
-
-
         jasmine: {
             src: ['dist-es5/generator-runtime.js',
                   'dist-es5/jspipe.js'],
@@ -123,7 +119,13 @@ module.exports = function(grunt) {
             }
         },
 
-
+        markdox: {
+            jspipe: {
+                src: 'src/jspipe.js',
+                dest: 'docs/jspipe.md'
+            }
+        },
+        
         watch: {
             files: ['./src/**/*.js'],
             tasks: ['build']
@@ -145,6 +147,8 @@ module.exports = function(grunt) {
 
 
     grunt.registerTask('dev', ['build', 'watch']);
+
+    grunt.registerTask('docs', ['clean', 'markdox']);
     
     grunt.registerTask('default', ['build']);
 };

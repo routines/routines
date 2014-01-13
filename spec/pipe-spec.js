@@ -26,12 +26,6 @@ describe('JSPipe.Pipe', function() {
                     expect(p.inbox).toEqual(['data', 'resume']);                    
                 });
                 
-                it('calls _rendezvous()', function() {
-                    var ret = p.put();
-                    spyOn(p, '_rendezvous').andCallThrough();
-                    ret();
-                    expect(p._rendezvous).toHaveBeenCalled();
-                });
             });
 
         });
@@ -56,12 +50,6 @@ describe('JSPipe.Pipe', function() {
                     expect(p.outbox).toEqual(['getResume']);
                 });
 
-                it('calls _rendezvous()', function() {
-                    var ret = p.get();
-                    spyOn(p, '_rendezvous').andCallThrough();
-                    ret();
-                    expect(p._rendezvous).toHaveBeenCalled();
-                });
             });
 
         });
@@ -74,12 +62,6 @@ describe('JSPipe.Pipe', function() {
             var expected = ['test', undefined];
             p.send('test');
             expect(p.inbox).toEqual(expected);
-        });
-
-        it('calls _rendezvous()', function() {
-            spyOn(p, '_rendezvous').andCallThrough();
-            p.send('some data');
-            expect(p._rendezvous).toHaveBeenCalled();
         });
 
     });
@@ -99,41 +81,5 @@ describe('JSPipe.Pipe', function() {
 
     });
 
-    describe('_rendezvous', function() {
-        var data = 'some data',
-            senderExpected,
-            receiverExpected,
-            senderActual,
-            receiverActual;                    
-
-        function notify() {
-            senderActual.push('didSend');
-        }
-
-        function send(data) {
-            receiverActual.push(data);
-        }
-
-        beforeEach(function() {
-            senderExpected = ['didSend'];
-            receiverExpected = [data];
-            senderActual = [];
-            receiverActual = [];
-            
-            p.inbox = [data, notify];
-            p.outbox = [send];
-        });
-
-        it('sends data placed in the inbox to the function in the outbox', function() {
-            p._rendezvous();
-            expect(receiverActual).toEqual(receiverExpected);
-        });
-
-        it('notifies the sender that the data was delivered', function() {
-            p._rendezvous();
-            expect(senderActual).toEqual(senderExpected);
-        });
-
-    });
 });
 
