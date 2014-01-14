@@ -14,7 +14,7 @@ function denode(fn, args) {
     });
     
     fn.apply(fn, newArgs);
-    return pipe.get();
+    return pipe;
 }
 
 
@@ -24,7 +24,7 @@ job(function* () {
         filedata = [];
     
     for (i in filenames) {
-        msg = yield denode(fs.readFile, filenames[i]);
+        msg = yield denode(fs.readFile, filenames[i]).get();
         filedata[i] = msg.data ? msg.data.toString('utf8') : msg.err;
     }
 
