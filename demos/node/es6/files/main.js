@@ -4,39 +4,31 @@ var fs = require('fs'),
     job = jspipe.job,
     filenames = ['file1.txt', 'file2.txt', 'file3.txt'];
 
+function denode(fn, args) {
+    var pipe = new Pipe(),
+        newArgs = args instanceof Array ? args : [args];
 
-function readfile(filename) {
-    var pipe = new Pipe();
-    
-    fs.readFile(filename, function(err, data) {
-        if (err) {
-            pipe.send({err: err});
-        } else {
-            pipe.send({data: data});
-        }
+    newArgs.push(function(err, data) {
+        var result = err ? {err:err} : {data:data};
+        pipe.send(result);
     });
     
-    return pipe;
+    fn.apply(fn, newArgs);
+    return pipe.get();
 }
 
 
 job(function* () {
-    var fileData = [],
-        message,
-        index,
-        file;
-
-    for (index in filenames) {
-        file = filenames[index];
-        message = yield readfile(file).get();
-        
-        fileData[index] =
-            message.data ?
-            message.data.toString('utf8') :
-            message.err;
+    var msg,
+        i,
+        filedata = [];
+    
+    for (i in filenames) {
+        msg = yield denode(fs.readFile, filenames[i]);
+        filedata[i] = msg.data ? msg.data.toString('utf8') : msg.err;
     }
 
-    console.log(fileData);
+    console.log(filedata);
 });
 
 
