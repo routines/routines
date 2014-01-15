@@ -47,6 +47,7 @@ using `put` (or `send`) and receive data using `get`.
 
 * **Array** *args* Parameters to pass to `fn`
 
+---
 # Communicating &amp; synchronizing between jobs
 
 ### Pipe
@@ -125,8 +126,6 @@ pipe.send(42);
 
 * **AnyType** *data* The data to put in the pipe.
 
----
-
 ### EventPipe
 
 An EventPipe is a pipe for delivering event data.
@@ -153,6 +152,7 @@ Normally you should use the `listen` function to create an EventPipe instead.
 
 Removes the event listener and closes the Pipe.
 
+---
 # Making pipes
 
 ### timeout(ms)
@@ -253,6 +253,7 @@ job(function* () {
 
 * **Array** *args* The arguments to supply to `fn`
 
+---
 ## Transforming pipes
 
 ### unique(pipe)

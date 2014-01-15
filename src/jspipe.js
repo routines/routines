@@ -107,6 +107,7 @@ function job(fn, args) {
 }
 
 /**
+ * ---
  * # Communicating & synchronizing between jobs
  */
 
@@ -268,10 +269,6 @@ function Pipe() {
 
 
 /**
- * ---
- */ 
-
-/**
  * An EventPipe is a pipe for delivering event data.
  *
  * ##### Example:
@@ -319,6 +316,7 @@ EventPipe.prototype.close = function() {
 
 
 /**
+ * ---
  * # Making pipes
  */
 
@@ -463,6 +461,7 @@ function denode(fn, args) {
     
 
 /**
+ * ---
  * ## Transforming pipes
  */
 
