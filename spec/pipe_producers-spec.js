@@ -142,10 +142,40 @@ describe('lazyseq', function() {
         runs(function() {
             expect(actual).toEqual(expected);
         });
-
         
     });
 
 });
 
+describe('denode', function() {
+
+    var pipe;
+
+    function nodeStyleFunction(arg0, arg1, callback) {
+        callback(null, 1);
+        callback(null, 2);
+    }
+    
+    it('produces a pipe that gets data when the supplied function invokes its callback', function() {
+        var expected = [1, 2],
+            actual = [];
+
+        pipe = JSPipe.denode(nodeStyleFunction, ['a', 'b']);
+
+        JSPipe.job(function* () {
+            var el;
+            while (el = yield pipe.get()) {
+                actual.push(el.data);
+            }
+        });
+
+        waitsFor(function() {
+            return actual.length === 2;
+        });
+
+        runs(function() {
+            expect(actual).toEqual(expected);
+        });
+    });
+});
 

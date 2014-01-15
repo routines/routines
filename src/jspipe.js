@@ -38,7 +38,7 @@ function isGeneratorFunction(fn) {
 /**
  * Run a generator function `fn` as a concurrent job.
  *
- * #### Example:
+ * ##### Example:
  * ```
  * var pipe = new JSPipe.Pipe();
  *
@@ -74,6 +74,7 @@ function isGeneratorFunction(fn) {
  * @param {Function} fn A generator function to execute as a concurrent job
  * @param {Array} args Parameters to pass to `fn`
  * @api public
+ * @function job
  */
 function job(fn, args) {
     var generator,
@@ -102,6 +103,10 @@ function job(fn, args) {
 }
 
 /**
+ * ---
+ */
+
+/**
  * A pipe provides a way for two jobs to communicate data and synchronize their execution.
  * One job can send data into the pipe by calling `yield pipe.put(data)` or `pipe.send(data)`
  * and another job can receive data by calling `yield pipe.get()`.
@@ -112,7 +117,7 @@ function job(fn, args) {
  * 
  * Once synchronized, the two jobs continue execution.
  *
- * #### Example:
+ * ##### Example:
  * ```
  * var pipe = new Pipe();
  * ```
@@ -145,7 +150,7 @@ function Pipe() {
      * If there is no receiver waiting for data, the sender will pause until another
      * job calls `yield pipe.get()`, which will then trigger a rendezvous.
      *
-     * #### Example
+     * ##### Example
      * ```
      * job(function* () {
      *     yield pipe.put(42);
@@ -176,7 +181,7 @@ function Pipe() {
      * pause until another job calls `yield pipe.put(data)`, which will then trigger
      * a rendezvous.
      *
-     * #### Example:
+     * ##### Example:
      * ```
      * job(function* () {
      *     var data;
@@ -202,7 +207,7 @@ function Pipe() {
     /**
      * Like `put`, but non-blocking. Unlike `put`, do not call with `yield`.
      *
-     * #### Example:
+     * ##### Example:
      * ```
      * pipe.send(42);
      * ```
@@ -258,7 +263,29 @@ function Pipe() {
 })(Pipe.prototype);
 
 
+/**
+ * ---
+ */ 
 
+/**
+ * An EventPipe is a pipe for delivering event data.
+ *
+ * ##### Example:
+ *
+ * ```
+ * var pipe = new EventPipe(document, 'keydown', function(evt) {
+ *     pipe.send(evt);
+ * });
+ * ```
+ *
+ * Normally you should use the `listen` function to create an EventPipe instead.
+ *
+ * @class EventPipe
+ * @constructor
+ * @param {Object} el An object, such as an HTMLElement, that exposes an addEventListener method.
+ * @param {String} type The name of the event, e.g. 'keydown'.
+ * @param {Function} handler The function that is called when the event fires.
+ */
 function EventPipe(el, type, handler) {
     // super
     Pipe.call(this);
@@ -271,6 +298,11 @@ function EventPipe(el, type, handler) {
 
 EventPipe.prototype = Object.create(Pipe.prototype);
 
+/**
+ * Removes the event listener and closes the Pipe.
+ * 
+ * @method EventPipe.close
+ */
 EventPipe.prototype.close = function() {
     this._el.removeEventListener(this._type, this._handler);
     delete this._el;
@@ -282,12 +314,34 @@ EventPipe.prototype.close = function() {
 
 
 
-///
+/**
+ * ---
+ */
 /// Pipe producers
 ///
 
 
-function timeout(ms, interruptor) {
+/**
+ * NOTE: will probably get renamed to `pause`.
+ * 
+ * Create a pipe that receives a value after a specified time. Use `timeout`
+ * to pause a `job`. Other jobs get a chance to execute this job is paused. 
+ *
+ * ##### Example:
+ *
+ * ```
+ * job(function* () {
+ *     yield timeout(200).get();
+ *     console.log('200ms elapsed');
+ * });
+ * ```
+ * 
+ * @function timeout
+ * @param {Number} ms The time to wait before a value is placed in the pipe
+ * @return {Pipe} A pipe
+ */
+
+function timeout(ms) { // TODO: consider renaming to "pause"
     // TODO: model timeout as a process
     var output = new Pipe();
 
@@ -299,6 +353,24 @@ function timeout(ms, interruptor) {
     return output;
 }
 
+/**
+ * Create a `Pipe` that receives event data.
+ *
+ * ##### Example:
+ *
+ * ```
+ * var pipe = listen(document, 'keydown');
+ * var keydownEventData = yield pipe.get();
+ * console.log(keydownEventData);
+ * ```
+ *
+ * @function listen
+ * @param {Object} el The object, such as an HTMLElement, on which to listen for events
+ * @param {String} type The name of the event, e.g. 'keydown'
+ * @param {Boolean} preventDefault Whether or not `.preventDefault()` should be called
+ *                                 on the event data.
+ * @return {Pipe} A pipe
+ */
 
 function listen(el, type, preventDefault) {
     var handler = function(e) {
@@ -312,7 +384,32 @@ function listen(el, type, preventDefault) {
     return output;
 }
 
-
+/**
+ * Creates a pipe with `count` elements, each produced by executing the function `fn`.
+ *
+ * ##### Example:
+ *
+ * ```
+ * var pipe = lazyseq(5, function(i) { return i * 10; });
+ *
+ * job(function* () {
+ *     var data,
+ *         result = [];
+ *
+ *     while (data = yield pipe.get()) {
+ *         result.push(data);
+ *     }
+ * 
+ *     console.log(result);
+ * });
+ * ```
+ * Prints `[0, 10, 20, 30, 40]` to console.
+ *
+ * @function lazyseq
+ * @param {Number} count The number of elements that should be produced
+ * @param {Function} fn The function that produces each element. It is invoked with
+ *                      with the element index
+ */
 function lazyseq(count, fn) {
     var output = new Pipe();
     job(function* () {
@@ -330,12 +427,78 @@ function lazyseq(count, fn) {
     return output;
 }
 
+/**
+ * Creates a `Pipe` that will get the data produced by a callback-invoking NodeJS
+ * function.
+ * 
+ * Useful for converting callback style code into sequential code.
+ *
+ * ##### Example:
+ *
+ * ```
+ * job(function* () {
+ *     var filedata = yield denode(fs.readFile, 'readme.txt');
+ *     console.log(filedata);
+ * });
+ * ```
+ *
+ * @function denode
+ * @param {Function} fn A node function that invokes a callback, e.g. fs.readFile
+ * @param {Array} args The arguments to supply to `fn`
+ */
+function denode(fn, args) {
+    var pipe = new Pipe(),
+        newArgs = args instanceof Array ? args : [args];
+
+    newArgs.push(function(err, data) {
+        var result = err ? {err:err} : {data:data};
+        pipe.send(result);
+    });
+    
+    fn.apply(fn, newArgs);
+    return pipe;
+}
+    
+
 ///
 /// Pipe transformers
 ///
 
 
-function unique(pipe) {
+/**
+ * NOTE: will be deprecated in favor of a generic filter function
+ * 
+ * Takes a pipe and produces a new pipe that only receives sequentially unique
+ * values.
+ *
+ * ##### Example:
+ *
+ * ```
+ * var pipe1 = new Pipe(),
+ *     pipe2 = unique(pipe1);
+ *
+ * pipe1.send(1);
+ * pipe1.send(1);
+ * pipe1.send(3);
+ * pipe1.send(1);
+ *
+ * job(function* () {
+ *     var data,
+ *         result = [];
+ *     while (data = yield pipe2.get()) {
+ *         result.push(data);
+ *     }
+ *     console.log(result);
+ * });
+ *
+ * ```
+ * Prints `[1, 3, 1]` to console.
+ *
+ * @function unique
+ * @param {Pipe} pipe The pipe from which sequentially unique values must be produced
+ * @return {Pipe} A Pipe
+ */
+function unique(pipe) { // TODO: swap out for generic filter
     var output = new Pipe();
 
     job(function* () {
@@ -359,6 +522,14 @@ function unique(pipe) {
     return output;
 }
 
+/**
+ * Produces a new pipe that gets data from a source pipe at a given pace.
+ * 
+ * @function pace
+ * @param {Number} ms The time to wait before getting the next value from the source pipe
+ * @param {Pipe} pipe The source pipe
+ * @return {Pipe} A pipe
+ */
 function pace(ms, pipe) {
     var output = new Pipe();
 
@@ -380,6 +551,7 @@ function pace(ms, pipe) {
     return output;
 }
 
+// TODO: remove
 function delay(pipe, ms) {
     var output = new Pipe();
     job(function* () {
@@ -399,6 +571,7 @@ function delay(pipe, ms) {
 /// Pipe coordination
 ///
 
+// TODO: revisit API
 function select(cases) {
     // TODO: consider rewriting as a sweetjs macro
     var output = new Pipe(),
@@ -442,6 +615,7 @@ export {
     timeout,
     listen,
     lazyseq,
+    denode,
 
     // Pipe transformers
     unique,

@@ -120,6 +120,10 @@ module.exports = function(grunt) {
         },
 
         markdox: {
+            options: {
+                template: 'markdox-template.md.ejs'
+            },
+            
             jspipe: {
                 src: 'src/jspipe.js',
                 dest: 'docs/jspipe.md'
