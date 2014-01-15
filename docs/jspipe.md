@@ -257,8 +257,6 @@ job(function* () {
 
 ### unique(pipe)
 
-NOTE: will be deprecated in favor of a generic filter function
-
 Takes a pipe and produces a new pipe that only receives sequentially unique
 values.
 

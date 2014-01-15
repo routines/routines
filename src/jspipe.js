@@ -467,8 +467,6 @@ function denode(fn, args) {
  */
 
 /**
- * NOTE: will be deprecated in favor of a generic filter function
- * 
  * Takes a pipe and produces a new pipe that only receives sequentially unique
  * values.
  *
@@ -499,7 +497,7 @@ function denode(fn, args) {
  * @param {Pipe} pipe The pipe from which sequentially unique values must be produced
  * @return {Pipe} A Pipe
  */
-function unique(pipe) { // TODO: swap out for generic filter
+function unique(pipe) {
     var output = new Pipe();
 
     job(function* () {
@@ -552,20 +550,6 @@ function pace(ms, pipe) {
     return output;
 }
 
-// TODO: remove
-function delay(pipe, ms) {
-    var output = new Pipe();
-    job(function* () {
-        var data;
-        while (pipe.isOpen) {
-            yield timeout(ms).get();
-            data = yield pipe.get();
-            output.send(data);
-        }
-    });
-
-    return output;
-}
 
 
 ///
@@ -621,7 +605,6 @@ export {
     // Pipe transformers
     unique,
     pace,
-    delay,
 
     // Pipe coordination
     sentinel,
