@@ -2,6 +2,8 @@
 
 <!-- Start src/jspipe.js -->
 
+# Running concurrent code
+
 ### job(fn, args)
 
 Run a generator function `fn` as a concurrent job.
@@ -45,7 +47,7 @@ using `put` (or `send`) and receive data using `get`.
 
 * **Array** *args* Parameters to pass to `fn`
 
----
+# Communicating &amp; synchronizing between jobs
 
 ### Pipe
 
@@ -151,7 +153,7 @@ Normally you should use the `listen` function to create an EventPipe instead.
 
 Removes the event listener and closes the Pipe.
 
----
+# Making pipes
 
 ### timeout(ms)
 
@@ -250,6 +252,8 @@ job(function* () {
 * **Function** *fn* A node function that invokes a callback, e.g. fs.readFile
 
 * **Array** *args* The arguments to supply to `fn`
+
+## Transforming pipes
 
 ### unique(pipe)
 

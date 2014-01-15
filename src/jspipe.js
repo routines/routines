@@ -36,6 +36,10 @@ function isGeneratorFunction(fn) {
 }
 
 /**
+ * # Running concurrent code
+ */
+
+/**
  * Run a generator function `fn` as a concurrent job.
  *
  * ##### Example:
@@ -103,7 +107,7 @@ function job(fn, args) {
 }
 
 /**
- * ---
+ * # Communicating & synchronizing between jobs
  */
 
 /**
@@ -315,10 +319,8 @@ EventPipe.prototype.close = function() {
 
 
 /**
- * ---
+ * # Making pipes
  */
-/// Pipe producers
-///
 
 
 /**
@@ -460,10 +462,9 @@ function denode(fn, args) {
 }
     
 
-///
-/// Pipe transformers
-///
-
+/**
+ * ## Transforming pipes
+ */
 
 /**
  * NOTE: will be deprecated in favor of a generic filter function
