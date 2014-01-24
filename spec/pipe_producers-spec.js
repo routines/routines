@@ -151,26 +151,25 @@ describe('denode', function() {
 
     var pipe;
 
-    function nodeStyleFunction(arg0, arg1, callback) {
-        callback(null, 1);
-        callback(null, 2);
+    function nodeStyleFunction(arg0, callback) {
+        callback(null, arg0);
     }
     
     it('produces a pipe that gets data when the supplied function invokes its callback', function() {
-        var expected = [1, 2],
+        var expected = ['a'],
             actual = [];
 
-        pipe = JSPipe.denode(nodeStyleFunction, ['a', 'b']);
+        pipe = JSPipe.denode(nodeStyleFunction, ['a']);
 
         JSPipe.job(function* () {
             var el;
-            while (el = yield pipe.get()) {
+            while (!(el = yield pipe.get()).close) {
                 actual.push(el.data);
             }
         });
 
         waitsFor(function() {
-            return actual.length === 2;
+            return !pipe.isOpen;
         });
 
         runs(function() {

@@ -493,7 +493,8 @@ function lazyseq(count, fn) {
 
 /**
  * Creates a `Pipe` that will get the data produced by a callback-invoking NodeJS
- * function.
+ * function. The pipe receives a `{data: ...}` or a `{err: ...}` message, and is
+ * then closed. 
  * 
  * Useful for converting callback style code into sequential code.
  *
@@ -517,6 +518,7 @@ function denode(fn, args) {
     newArgs.push(function(err, data) {
         var result = err ? {err:err} : {data:data};
         pipe.send(result);
+        pipe.close('denode');
     });
     
     fn.apply(fn, newArgs);

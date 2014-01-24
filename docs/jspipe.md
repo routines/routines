@@ -278,7 +278,8 @@ Prints `[0, 10, 20, 30, 40]` to console.
 ### denode(fn, args)
 
 Creates a `Pipe` that will get the data produced by a callback-invoking NodeJS
-function.
+function. The pipe receives a `{data: ...}` or a `{err: ...}` message, and is
+then closed. 
 
 Useful for converting callback style code into sequential code.
 
