@@ -199,6 +199,23 @@ function Pipe() {
      *
      * Returns a pipe which will close after the items are copied.
      *
+     * ##### Example
+     * `
+     * pipe.pushItems([1, 2, 3]);
+     *
+     * job(function* () {
+     *     var msg,
+     *         result = [];
+     *
+     *     while (!(msg = yield pipe.get()).close) {
+     *         result.push(msg.data);
+     *     }
+     *
+     *     console.log(result);
+     * });
+     * ```
+     * Prints `[1, 2, 3]` to console.
+     *
      * @method Pipe.pushItems
      * @param {Array} items The items to put in the pipe
      * @param {Boolean} leaveOpen Optional. Control whether to leave pipe open or not

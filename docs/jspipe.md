@@ -106,6 +106,23 @@ but can be determined by the optional `leaveOpen` parameter.
 
 Returns a pipe which will close after the items are copied.
 
+##### Example
+`
+pipe.pushItems([1, 2, 3]);
+
+job(function* () {
+    var msg,
+        result = [];
+
+    while (!(msg = yield pipe.get()).close) {
+        result.push(msg.data);
+    }
+
+    console.log(result);
+});
+```
+Prints `[1, 2, 3]` to console.
+
 ##### Params: 
 
 * **Array** *items* The items to put in the pipe
