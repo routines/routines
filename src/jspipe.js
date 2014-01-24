@@ -140,12 +140,29 @@ function Pipe() {
 (function(proto) {
 
     /**
-     * Mark the pipe as closed.
+     * Closes the pipe and sets the `isOpen` flag to `false`.
+     *
+     * After a pipe is closed you can no longer send messages to it.
+     * Methods like `put`, `pushItems`, and `send` will throw an exception.
      * 
      * @method Pipe.close
+     * @param {String} reason Optional. Provide a reason why the pipe is getting closed.
      */
-    proto.close = function() {
+    proto.close = function(reason) {
+        var methods = ['put', 'pushItems', 'send'],
+            newMethodBody = function() { throw 'Pipe is closed'; },
+            self = this;
+        this.send({close: reason});
         this.isOpen = false;
+        methods.forEach(function(m) {
+            Object.defineProperty(self, m, {
+                configurable: false,
+                enumerable: false,
+                value: newMethodBody                
+            });
+        });
+        Object.freeze(this);
+
     };
 
     /**
@@ -172,6 +189,36 @@ function Pipe() {
             // Try to rendezvous with a receiver
             rendezvous(self);
         };
+    };
+
+    /**
+     * Puts the contents of `items` into the pipe.
+     *
+     * By default the pipe will be closed after the items are copied,
+     * but can be determined by the optional `leaveOpen` parameter.
+     *
+     * Returns a pipe which will close after the items are copied.
+     *
+     * @method Pipe.pushItems
+     * @param {Array} items The items to put in the pipe
+     * @param {Boolean} leaveOpen Optional. Control whether to leave pipe open or not
+     * @return {Pipe} A pipe that closes after the items are copied
+     */
+    proto.pushItems = function(items, leaveOpen) {
+        var output = new Pipe(),
+            self = this;
+
+        items.forEach(function(v) {
+            self.send({data: v});
+        });
+        
+        if (!leaveOpen) {
+            this.close('pushItems');
+        }
+
+        output.close('pushItems');
+        
+        return output;
     };
 
     proto.waiting = function() {
@@ -417,12 +464,11 @@ function lazyseq(count, fn) {
             i = 0;
         while (0 < count--) {
             data = fn(i);
-            yield output.put(data);
+            yield output.put({data: data});
             i++;
         }
 
-        yield output.put(sentinel);
-        output.close();
+        output.close('lazyseq');
     });
     return output;
 }
@@ -504,8 +550,7 @@ function unique(pipe) {
             data,
             lastData;
 
-        while (pipe.isOpen) {
-            data = yield pipe.get();
+        while (!(data = yield pipe.get()).close) {
             if (isFirstData || data !== lastData) {
                 yield output.put(data);
                 isFirstData = false;
@@ -513,7 +558,7 @@ function unique(pipe) {
             lastData = data;
         }
 
-        output.close();
+        output.close('unique');
 
     });
 
@@ -536,8 +581,7 @@ function pace(ms, pipe) {
             data,
             send = function(data) { output.send(data); };
 
-        while (pipe.isOpen) {
-            data = yield pipe.get();
+        while (!(data = yield pipe.get()).close) {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(send.bind(output, data), ms);
         }
