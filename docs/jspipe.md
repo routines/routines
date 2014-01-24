@@ -107,7 +107,8 @@ but can be determined by the optional `leaveOpen` parameter.
 Returns a pipe which will close after the items are copied.
 
 ##### Example
-`
+
+```
 pipe.pushItems([1, 2, 3]);
 
 job(function* () {
