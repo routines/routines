@@ -200,7 +200,7 @@ function Pipe() {
      * Returns a pipe which will close after the items are copied.
      *
      * ##### Example
-     * `
+     * ```
      * pipe.pushItems([1, 2, 3]);
      *
      * job(function* () {
