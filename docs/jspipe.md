@@ -67,9 +67,16 @@ Once synchronized, the two jobs continue execution.
 var pipe = new Pipe();
 ```
 
-### Pipe.close()
+### Pipe.close(reason)
 
-Mark the pipe as closed.
+Closes the pipe and sets the `isOpen` flag to `false`.
+
+After a pipe is closed you can no longer send messages to it.
+Methods like `put`, `pushItems`, and `send` will throw an exception.
+
+##### Params: 
+
+* **String** *reason* Optional. Provide a reason why the pipe is getting closed.
 
 ### Pipe.put(data)
 
@@ -89,6 +96,25 @@ job(function* () {
 ##### Params: 
 
 * **AnyType** *data* The data to put into the pipe.
+
+### Pipe.pushItems(items, leaveOpen)
+
+Puts the contents of `items` into the pipe.
+
+By default the pipe will be closed after the items are copied,
+but can be determined by the optional `leaveOpen` parameter.
+
+Returns a pipe which will close after the items are copied.
+
+##### Params: 
+
+* **Array** *items* The items to put in the pipe
+
+* **Boolean** *leaveOpen* Optional. Control whether to leave pipe open or not
+
+##### Return:
+
+* **Pipe** A pipe that closes after the items are copied
 
 ### Pipe.get()
 
