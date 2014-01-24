@@ -257,11 +257,11 @@ Creates a pipe with `count` elements, each produced by executing the function `f
 var pipe = lazyseq(5, function(i) { return i * 10; });
 
 job(function* () {
-    var data,
+    var msg,
         result = [];
 
-    while (data = yield pipe.get()) {
-        result.push(data);
+    while (!(data = yield pipe.get()).close) {
+        result.push(msg.data);
     }
 
     console.log(result);

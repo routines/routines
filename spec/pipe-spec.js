@@ -214,4 +214,3 @@ describe('JSPipe.Pipe', function() {
     });
 
 });
-
