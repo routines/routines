@@ -1,24 +1,24 @@
 {
-    "name": "jspipe",
-    "version": "0.1.2",
-    "description": "JS/Pipe - coordinating asynchronous code without callbacks or chained functions",
-    "main": "jspipe.js",
-    
+    "name": "routines",
+    "version": "0.2.0",
+    "description": "Routines - coordinating asynchronous code without callbacks or chained functions",
+    "main": "routines.js",
+
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    
+
     "repository": {
         "type": "git",
-        "url": "git://github.com/jspipe/jspipe.git"
+        "url": "git://github.com/routines/routines.git"
     },
 
-    "main": "./dist-es6/commonjs/jspipe.js",
+    "main": "./dist-es6/commonjs/routines.js",
 
     "engines": {
         "node": ">=0.11"
     },
-    
+
     "keywords": [
         "asynchronous",
         "concurrent",
@@ -30,14 +30,14 @@
         "es6",
         "generator"
     ],
-    
+
     "author": "Joubert Nel",
     "license": "MIT",
-    
+
     "bugs": {
-        "url": "https://github.com/jspipe/jspipe/issues"
+        "url": "https://github.com/routines/routines/issues"
     },
-    
+
     "devDependencies": {
         "grunt": "*",
         "regenerator": "*",
@@ -47,8 +47,8 @@
         "grunt-contrib-clean": "*",
         "grunt-es6-module-transpiler": "*",
         "grunt-markdox": "*",
-        "sweet.js": "*"        
+        "sweet.js": "*"
     },
-    
-    "homepage": "http://jspipe.org"
+
+    "homepage": "http://routines.ch"
 }
