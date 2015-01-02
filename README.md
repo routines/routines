@@ -1,6 +1,8 @@
 # Routines
 
-Routines provides JavaScript primitives that make it possible to *coordinate asynchronous code* without callbacks or chained functions. 
+Routines provides the primitives that make it possible to *coordinate asynchronous code* without callbacks or chained functions in JavaScript:
+- concurrent routines
+- channels
 
 As a result, stack traces are crystal clear so debugging is easy.
 
