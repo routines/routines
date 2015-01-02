@@ -13,7 +13,7 @@ module.exports = function(grunt) {
         clean: {
             docs: ['docs/']
         },
-        
+
         regenerator: {
             jspipe: {
                 options: {
@@ -38,7 +38,7 @@ module.exports = function(grunt) {
                         { src: 'demos/web/es6/jobWaitsForAnother.js', dest: 'demos/web/es5/jobWaitsForAnother.js' },
                         { src: 'demos/web/es6/select.js', dest: 'demos/web/es5/select.js' },
                         { src: 'demos/web/es6/simultaneous-processes.js', dest: 'demos/web/es5/simultaneous-processes.js' }
-                        
+
                     ],
                     regeneratorOptions: {
                         includeRuntime: false
@@ -123,13 +123,13 @@ module.exports = function(grunt) {
             options: {
                 template: 'markdox-template.md.ejs'
             },
-            
+
             jspipe: {
                 src: 'src/jspipe.js',
                 dest: 'docs/jspipe.md'
             }
         },
-        
+
         watch: {
             files: ['./src/**/*.js'],
             tasks: ['build']
@@ -153,6 +153,6 @@ module.exports = function(grunt) {
     grunt.registerTask('dev', ['build', 'watch']);
 
     grunt.registerTask('docs', ['clean', 'markdox']);
-    
+
     grunt.registerTask('default', ['build']);
 };

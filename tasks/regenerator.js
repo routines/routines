@@ -15,7 +15,7 @@ module.exports = function(grunt) {
                     return;
                 }
 
-                var output = regenerator(src.toString(), options.regeneratorOptions);
+                var output = regenerator.compile(src.toString(), options.regeneratorOptions).code;
 
                 fs.writeFile(file.dest, output, function(err) {
                     if (err) {

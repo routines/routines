@@ -48,7 +48,7 @@ using `put` (or `send`) and receive data using `get`.
 * **Array** *args* Parameters to pass to `fn`
 
 ---
-# Communicating &amp; synchronizing between jobs
+# Communicating & synchronizing between jobs
 
 ### Pipe
 
@@ -177,7 +177,7 @@ An EventPipe is a pipe for delivering event data.
 ##### Example:
 
 ```
-var pipe = new EventPipe(document, &#39;keydown&#39;, function(evt) {
+var pipe = new EventPipe(document, 'keydown', function(evt) {
     pipe.send(evt);
 });
 ```
@@ -188,7 +188,7 @@ Normally you should use the `listen` function to create an EventPipe instead.
 
 * **Object** *el* An object, such as an HTMLElement, that exposes an addEventListener method.
 
-* **String** *type* The name of the event, e.g. &#39;keydown&#39;.
+* **String** *type* The name of the event, e.g. 'keydown'.
 
 * **Function** *handler* The function that is called when the event fires.
 
@@ -204,14 +204,14 @@ Removes the event listener and closes the Pipe.
 NOTE: will probably get renamed to `pause`.
 
 Create a pipe that receives a value after a specified time. Use `timeout`
-to pause a `job`. Other jobs get a chance to execute this job is paused. 
+to pause a `job`. Other jobs get a chance to execute this job is paused.
 
 ##### Example:
 
 ```
 job(function* () {
     yield timeout(200).get();
-    console.log(&#39;200ms elapsed&#39;);
+    console.log('200ms elapsed');
 });
 ```
 
@@ -230,7 +230,7 @@ Create a `Pipe` that receives event data.
 ##### Example:
 
 ```
-var pipe = listen(document, &#39;keydown&#39;);
+var pipe = listen(document, 'keydown');
 var keydownEventData = yield pipe.get();
 console.log(keydownEventData);
 ```
@@ -239,9 +239,9 @@ console.log(keydownEventData);
 
 * **Object** *el* The object, such as an HTMLElement, on which to listen for events
 
-* **String** *type* The name of the event, e.g. &#39;keydown&#39;
+* **String** *type* The name of the event, e.g. 'keydown'
 
-* **Boolean** *preventDefault* Whether or not `.preventDefault()` should be called
+* **Boolean** *preventDefault* Whether or not `.preventDefault()` should be called                                 on the event data.
 
 ##### Return:
 
@@ -273,13 +273,13 @@ Prints `[0, 10, 20, 30, 40]` to console.
 
 * **Number** *count* The number of elements that should be produced
 
-* **Function** *fn* The function that produces each element. It is invoked with
+* **Function** *fn* The function that produces each element. It is invoked with                      with the element index
 
 ### denode(fn, args)
 
 Creates a `Pipe` that will get the data produced by a callback-invoking NodeJS
 function. The pipe receives a `{data: ...}` or a `{err: ...}` message, and is
-then closed. 
+then closed.
 
 Useful for converting callback style code into sequential code.
 
@@ -287,7 +287,7 @@ Useful for converting callback style code into sequential code.
 
 ```
 job(function* () {
-    var filedata = yield denode(fs.readFile, &#39;readme.txt&#39;);
+    var filedata = yield denode(fs.readFile, 'readme.txt');
     console.log(filedata);
 });
 ```

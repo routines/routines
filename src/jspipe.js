@@ -1,9 +1,9 @@
-// JSPipe is free software distributed under the terms of the MIT license reproduced here.
-// JSPipe may be used for any purpose, including commercial purposes, at absolutely no cost.
+// Routines is free software distributed under the terms of the MIT license reproduced here.
+// Routines may be used for any purpose, including commercial purposes, at absolutely no cost.
 // No paperwork, no royalties, no GNU-like "copyleft" restrictions, either.
 // Just download it and use it.
 
-// Copyright (c) 2013 Joubert Nel
+// Copyright (c) 2013, 2014, 2015 Joubert Nel
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -119,7 +119,7 @@ function job(fn, args) {
  * Once both a sender job and a receiver job are waiting on the pipe a rendezvous occurs,
  * transferring the data in the pipe to the receiver and consequently synchronizing the two
  * waiting jobs.
- * 
+ *
  * Once synchronized, the two jobs continue execution.
  *
  * ##### Example:
@@ -144,7 +144,7 @@ function Pipe() {
      *
      * After a pipe is closed you can no longer send messages to it.
      * Methods like `put`, `pushItems`, and `send` will throw an exception.
-     * 
+     *
      * @method Pipe.close
      * @param {String} reason Optional. Provide a reason why the pipe is getting closed.
      */
@@ -158,7 +158,7 @@ function Pipe() {
             Object.defineProperty(self, m, {
                 configurable: false,
                 enumerable: false,
-                value: newMethodBody                
+                value: newMethodBody
             });
         });
         Object.freeze(this);
@@ -180,7 +180,7 @@ function Pipe() {
      * ```
      *
      * @method Pipe.put
-     * @param {AnyType} data The data to put into the pipe. 
+     * @param {AnyType} data The data to put into the pipe.
      */
     proto.put = function(data) {
         var self = this;
@@ -229,13 +229,13 @@ function Pipe() {
         items.forEach(function(v) {
             self.send({data: v});
         });
-        
+
         if (!leaveOpen) {
             this.close('pushItems');
         }
 
         output.close('pushItems');
-        
+
         return output;
     };
 
@@ -281,7 +281,7 @@ function Pipe() {
      * ```
      * pipe.send(42);
      * ```
-     * 
+     *
      * @method Pipe.send
      * @param {AnyType} data The data to put in the pipe.
      */
@@ -366,7 +366,7 @@ EventPipe.prototype = Object.create(Pipe.prototype);
 
 /**
  * Removes the event listener and closes the Pipe.
- * 
+ *
  * @method EventPipe.close
  */
 EventPipe.prototype.close = function() {
@@ -388,9 +388,9 @@ EventPipe.prototype.close = function() {
 
 /**
  * NOTE: will probably get renamed to `pause`.
- * 
+ *
  * Create a pipe that receives a value after a specified time. Use `timeout`
- * to pause a `job`. Other jobs get a chance to execute this job is paused. 
+ * to pause a `job`. Other jobs get a chance to execute this job is paused.
  *
  * ##### Example:
  *
@@ -400,7 +400,7 @@ EventPipe.prototype.close = function() {
  *     console.log('200ms elapsed');
  * });
  * ```
- * 
+ *
  * @function timeout
  * @param {Number} ms The time to wait before a value is placed in the pipe
  * @return {Pipe} A pipe
@@ -464,7 +464,7 @@ function listen(el, type, preventDefault) {
  *     while (!(data = yield pipe.get()).close) {
  *         result.push(msg.data);
  *     }
- * 
+ *
  *     console.log(result);
  * });
  * ```
@@ -494,8 +494,8 @@ function lazyseq(count, fn) {
 /**
  * Creates a `Pipe` that will get the data produced by a callback-invoking NodeJS
  * function. The pipe receives a `{data: ...}` or a `{err: ...}` message, and is
- * then closed. 
- * 
+ * then closed.
+ *
  * Useful for converting callback style code into sequential code.
  *
  * ##### Example:
@@ -520,11 +520,11 @@ function denode(fn, args) {
         pipe.send(result);
         pipe.close('denode');
     });
-    
+
     fn.apply(fn, newArgs);
     return pipe;
 }
-    
+
 
 /**
  * ---
@@ -587,7 +587,7 @@ function unique(pipe) {
 
 /**
  * Produces a new pipe that gets data from a source pipe at a given pace.
- * 
+ *
  * @function pace
  * @param {Number} ms The time to wait before getting the next value from the source pipe
  * @param {Pipe} pipe The source pipe
