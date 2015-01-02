@@ -1,32 +1,32 @@
-function main(Pipe, job, listen,  pace) {
-    
+function main(Chan, go, listen,  pace) {
+
     var input = document.getElementById('searchtext'),
         results = document.getElementById('results'),
         wikipediaUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&format=json&callback=?&search=',
-        searchRequestPipe = new Pipe(),
-        searchResultsPipe = new Pipe();
+        searchRequestChan = new Chan(),
+        searchResultsChan = new Chan();
 
-    job(search, [searchRequestPipe, searchResultsPipe]);
-    job(displaySearchResults, [searchResultsPipe]);
-    job(getUserSearchInput, [searchRequestPipe]);
+    go(search, [searchRequestChan, searchResultsChan]);
+    go(displaySearchResults, [searchResultsChan]);
+    go(getUserSearchInput, [searchRequestChan]);
 
 
-    function* search(requestPipe, resultPipe) {
+    function* search(requestChan, resultChan) {
         var searchTerm,
             httpRequest;
-        
-        while (searchTerm = yield requestPipe.get()) {
+
+        while (searchTerm = yield requestChan.get()) {
             httpRequest && httpRequest.abort();
             httpRequest = $.getJSON(wikipediaUrl + encodeURIComponent(searchTerm),
-                                    resultPipe.send.bind(resultPipe));
+                                    resultChan.send.bind(resultChan));
         }
     }
 
-    function* displaySearchResults(resultPipe) {
+    function* displaySearchResults(resultChan) {
         var res,
             lines;
-        
-        while (res = yield resultPipe.get()) {
+
+        while (res = yield resultChan.get()) {
             lines = res.error && ['<h1>' + res.error + '</h1>'] || res[0] && res[1];
             results.innerHTML = lines.map(function(line) {
                 return '<p>' + line + '</p>';
@@ -34,26 +34,26 @@ function main(Pipe, job, listen,  pace) {
         }
     }
 
-    function* getUserSearchInput(requestPipe) {
+    function* getUserSearchInput(requestChan) {
         var pacedKeyup = pace(300, listen(input, 'keyup')),
             evt,
             text,
             previousText,
             minLength;
-        
+
         while (evt = yield pacedKeyup.get()) {
             text = evt.target.value;
             minLength = text.length > 2;
 
             if (minLength && text !== previousText) {
-                requestPipe.send(text);                
+                requestChan.send(text);
             } else if (!minLength) {
                 results.innerHTML = '';
             }
 
             previousText = text;
-        }        
+        }
     }
 };
 
-main(JSPipe.Pipe, JSPipe.job, JSPipe.listen, JSPipe.pace);
+main(Routines.Chan, Routines.go, Routines.listen, Routines.pace);

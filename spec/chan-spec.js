@@ -1,12 +1,12 @@
-/*globals describe, beforeEach, it, expect, spyOn, JSPipe */
+/*globals describe, beforeEach, it, expect, spyOn, Routines */
 
 
-describe('JSPipe.Pipe', function() {
+describe('Routines.Chan', function() {
     var p;
 
     beforeEach(function() {
         debugger;
-        p = new JSPipe.Pipe();
+        p = new Routines.Chan();
     });
 
     describe('put', function() {
@@ -23,9 +23,9 @@ describe('JSPipe.Pipe', function() {
                 it('pushes data argument and resume argument into the inbox', function() {
                     var ret = p.put('data');
                     ret('resume');
-                    expect(p.inbox).toEqual(['data', 'resume']);                    
+                    expect(p.inbox).toEqual(['data', 'resume']);
                 });
-                
+
             });
 
         });
@@ -33,85 +33,84 @@ describe('JSPipe.Pipe', function() {
     });
 
     describe('pushItems', function() {
-        var pipe,
+        var chan,
             data = ['alpha', 'beta', 'gamma'],
             expected,
-            actual;            
+            actual;
 
         beforeEach(function() {
-            pipe = new JSPipe.Pipe();
+            chan = new Routines.Chan();
             actual = [];
             expected = undefined;
         });
-        
-        it('puts the contents of "array" into the pipe and closes the pipe', function() {
+
+        it('puts the contents of "array" into the channel and closes the channel', function(done) {
             expected = data.map(function(v) {
                 return {data: v};
             });
 
             expected.push({close: 'pushItems'});
-            
-            pipe.pushItems(data);
 
-            JSPipe.job(function* () {
+            chan.pushItems(data);
+
+            Routines.go(function* () {
                 var d;
-                while ((d = yield pipe.get())) {
+                while ((d = yield chan.get())) {
                     actual.push(d);
                 }
             });
 
-            waitsFor(function() {
-                return actual.length === expected.length;
-            });
-
-            runs(function() {
+            setTimeout(function() {
+              if (actual.length === expected.length) {
                 expect(actual).toEqual(expected);
-            });
+                done();
+              }
+
+            }, 33);
 
         });
 
-        it('leaves the pipe open if the optional "leaveOpen" argument is "true"', function() {
+        it('leaves the channel open if the optional "leaveOpen" argument is "true"', function(done) {
             expected = data.map(function(v) { return { data: v }; });
 
-            pipe.pushItems(data, true);
+            chan.pushItems(data, true);
 
-            JSPipe.job(function* () {
+            Routines.go(function* () {
                 var d;
-                while ((d = yield pipe.get())) {
+                while ((d = yield chan.get())) {
                     actual.push(d);
                 }
             });
 
-            waitsFor(function() {
-                return actual.length === expected.length;
-            });
-
-            runs(function() {
-                expect(actual).toEqual(expected);                
-            });
+            setTimeout(function() {
+              if (actual.length === expected.length) {
+                expect(actual).toEqual(expected);
+                done();
+              }
+            }, 33);
         });
 
-        
-        it('returns a pipe which closes after the items are copied', function() {
-            var resultPipe = pipe.pushItems(data);
+
+        it('returns a channel which closes after the items are copied', function(done) {
+            var resultChan = chan.pushItems(data);
             expected = ['closed', false];
 
-            JSPipe.job(function* () {
+            Routines.go(function* () {
                 var v;
-                if ((yield resultPipe.get()).close) {
+                if ((yield resultChan.get()).close) {
                     actual.push('closed');
-                    actual.push(resultPipe.isOpen);
+                    actual.push(resultChan.isOpen);
                 }
             });
 
-            waitsFor(function() {
-                return actual.length === expected.length;
-            });
-
-            runs(function() {
+            setTimeout(function() {
+              if (actual.length === expected.length) {
                 expect(actual).toEqual(expected);
-            });            
-            
+                done();
+              }
+
+            }, 33);
+
         });
 
     });
@@ -158,21 +157,24 @@ describe('JSPipe.Pipe', function() {
             actual = [];
         });
 
-        it('puts a "{close:context}" message into the pipe', function() {
+        it('puts a "{close:context}" message into the channel', function(done) {
             expected = [{close:'testing'}];
             p.send('some data');
             p.close('testing');
 
-            JSPipe.job(function* () {
+            Routines.go(function* () {
                 var msg;
                 while (!(msg = yield p.get()).close) {}
                 actual.push(msg);
             });
 
-            waitsFor(function() { return actual.length === expected.length; });
+            setTimeout(function() {
+              if (actual.length === expected.length) {
+                expect(actual).toEqual(expected);
+                done();
+              }
 
-            runs(function() { expect(actual).toEqual(expected); });                
-            
+            }, 33);
         });
 
         it('sets the "isOpen" flag to false', function() {
@@ -200,14 +202,14 @@ describe('JSPipe.Pipe', function() {
             expect(p.send).toThrow();
         });
 
-        it('freezes the pipe', function() {
+        it('freezes the channel', function() {
             expected = [true, false, false];
             actual.push(p.isOpen);
             p.close();
             actual.push(p.isOpen);
             p.isOpen = true;
             actual.push(p.isOpen);
-            
+
             expect(actual).toEqual(expected);
         });
 

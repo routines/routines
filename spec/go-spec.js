@@ -1,14 +1,14 @@
-/*globals describe, it, expect, JSPipe */
+/*globals describe, it, expect, Routines */
 
-describe('job', function() {
+describe('go', function() {
 
     describe('fn argument', function() {
 
-        it('it is a generator function that is executed when "job" is invoked', function() {
+        it('it is a generator function that is executed when "go" is invoked', function() {
             var expected = 'didRun',
                 actual;
-            
-            JSPipe.job(function* () {
+
+            Routines.go(function* () {
                 actual = expected;
             });
 
@@ -16,15 +16,15 @@ describe('job', function() {
 
         });
 
-        it('can yield functions that are invoked by "job"', function() {
+        it('can yield functions that are invoked by "go"', function() {
             var expected = 15,
                 actual;
 
-            JSPipe.job(function* () {
+            Routines.go(function* () {
                 yield function() { actual = expected; };
             });
 
-            expect(actual).toEqual(expected);                 
+            expect(actual).toEqual(expected);
         });
 
         describe('yielded function', function() {
@@ -33,20 +33,20 @@ describe('job', function() {
                 var expected = [1, 2],
                     actual = [];
 
-                JSPipe.job(function* () {
+                Routines.go(function* () {
                     yield function(resume) {
                         actual.push(1);
                         resume();
                     };
-                    actual.push(2);                    
+                    actual.push(2);
                 });
 
                 expect(actual).toEqual(expected);
 
             });
-            
+
         });
 
-    });    
+    });
 
 });

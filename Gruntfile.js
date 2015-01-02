@@ -15,25 +15,15 @@ module.exports = function(grunt) {
         },
 
         regenerator: {
-            jspipe: {
+            routines: {
                 options: {
                     files: [
-                        { src: 'src/jspipe.js', dest: 'tmp/jspipe.js' },
-                        { src: 'spec/job-spec.js', dest: 'spec-es5/job-spec.js' },
-                        { src: 'spec/pipe-spec.js', dest: 'spec-es5/pipe-spec.js' },
-                        { src: 'spec/pipe_producers-spec.js', dest: 'spec-es5/pipe_producers-spec.js' },
-                        { src: 'spec/eventpipe-spec.js', dest: 'spec-es5/eventpipe-spec.js' }
-                    ],
-                    regeneratorOptions: {
-                        includeRuntime: false
-                    }
-                }
-            },
+                        { src: 'src/routines.js', dest: 'tmp/routines.js' },
+                        { src: 'spec/go-spec.js', dest: 'spec-es5/go-spec.js' },
+                        { src: 'spec/chan-spec.js', dest: 'spec-es5/chan-spec.js' },
+                        { src: 'spec/chan_producers-spec.js', dest: 'spec-es5/chan_producers-spec.js' },
+                        { src: 'spec/eventchan-spec.js', dest: 'spec-es5/eventchan-spec.js' },
 
-
-            demos: {
-                options: {
-                    files: [
                         { src: 'demos/web/es6/autocomplete.js', dest: 'demos/web/es5/autocomplete.js' },
                         { src: 'demos/web/es6/jobWaitsForAnother.js', dest: 'demos/web/es5/jobWaitsForAnother.js' },
                         { src: 'demos/web/es6/select.js', dest: 'demos/web/es5/select.js' },
@@ -45,7 +35,6 @@ module.exports = function(grunt) {
                     }
                 }
             }
-
         },
 
         jshint: {
@@ -61,11 +50,11 @@ module.exports = function(grunt) {
 
             commonjs: {
                 type: 'cjs',
-                files: [{ src: ['tmp/jspipe.js'],
-                          dest: 'dist-es5/commonjs/jspipe.js' },
+                files: [{ src: ['tmp/routines.js'],
+                          dest: 'dist-es5/commonjs/routines.js' },
 
-                        { src: ['src/jspipe.js'],
-                          dest: 'dist-es6/commonjs/jspipe.js' }]
+                        { src: ['src/routines.js'],
+                          dest: 'dist-es6/commonjs/routines.js' }]
             },
 
             amd: {
@@ -90,17 +79,17 @@ module.exports = function(grunt) {
         browser: {
             es5: {
                 options: {
-                    src: ['tmp/jspipe.js'],
-                    dest: 'dist-es5/jspipe.js',
-                    namespace: 'JSPipe'
+                    src: ['tmp/routines.js'],
+                    dest: 'dist-es5/routines.js',
+                    namespace: 'Routines'
                 }
             },
 
             es6: {
                 options: {
-                    src: ['src/jspipe.js'],
-                    dest: 'dist-es6/jspipe.js',
-                    namespace: 'JSPipe'
+                    src: ['src/routines.js'],
+                    dest: 'dist-es6/routines.js',
+                    namespace: 'Routines'
                 }
             }
         },
@@ -113,7 +102,7 @@ module.exports = function(grunt) {
 
         jasmine: {
             src: ['dist-es5/generator-runtime.js',
-                  'dist-es5/jspipe.js'],
+                  'dist-es5/routines.js'],
             options: {
                 specs: 'spec-es5/*-spec.js'
             }
@@ -124,9 +113,9 @@ module.exports = function(grunt) {
                 template: 'markdox-template.md.ejs'
             },
 
-            jspipe: {
-                src: 'src/jspipe.js',
-                dest: 'docs/jspipe.md'
+            routines: {
+                src: 'src/routines.js',
+                dest: 'docs/routines.md'
             }
         },
 

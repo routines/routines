@@ -1,5 +1,5 @@
-function main(Pipe, job, timeout) {
-    var pipe = new Pipe(),
+function main(Chan, go, timeout) {
+    var chan = new Chan(),
         out = document.getElementById('out');
 
     function render(q) {
@@ -15,34 +15,34 @@ function main(Pipe, job, timeout) {
     }
 
     // Process 1
-    job(function* () {
+    go(function* () {
         while (yield timeout(250).get()) {
-            pipe.send(1);
+            chan.send(1);
         }
     });
 
     // Process 2
-    job(function* () {
+    go(function* () {
         while (yield timeout(1000).get()) {
-            pipe.send(2);
+            chan.send(2);
         }
     });
 
-    
+
     // Process 3
-    job(function* () {
+    go(function* () {
         while (yield timeout(1500).get()) {
-            pipe.send(3);
+            chan.send(3);
         }
     });
 
 
     // Render 10 most recent items from the 3 simultaneous processes
-    job(function* () {
+    go(function* () {
         var data = [],
             newItem;
 
-        while (newItem = yield pipe.get()) {
+        while (newItem = yield chan.get()) {
             out.innerHTML = render(data);
             data.push(newItem);
             data = peekn(data, 10);
@@ -52,4 +52,4 @@ function main(Pipe, job, timeout) {
 }
 
 
-main(JSPipe.Pipe, JSPipe.job, JSPipe.timeout);
+main(Routines.Chan, Routines.go, Routines.timeout);

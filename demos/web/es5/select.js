@@ -1,11 +1,9 @@
 
-wrapGenerator.mark(main);
-
-function main(Pipe, job, timeout, select) {
+var main = regeneratorRuntime.mark(function main(Chan, go, timeout, select) {
     var c1, c2, c3, out, start, timetaken, message;
 
-    return wrapGenerator(function main$($ctx) {
-        while (1) switch ($ctx.next) {
+    return regeneratorRuntime.wrap(function main$(context$1$0) {
+        while (1) switch (context$1$0.prev = context$1$0.next) {
         case 0:
             message = function message(text) {
                 var p = document.createElement('p');
@@ -13,68 +11,68 @@ function main(Pipe, job, timeout, select) {
                 out.appendChild(p);
             };
 
-            c1 = new Pipe(), c2 = new Pipe(), c3 = new Pipe(), out = document.getElementById('out'), start = Date.now();
+            c1 = new Chan(), c2 = new Chan(), c3 = new Chan(), out = document.getElementById('out'), start = Date.now();
 
-            job(wrapGenerator.mark(function() {
-                return wrapGenerator(function($ctx) {
-                    while (1) switch ($ctx.next) {
+            go(regeneratorRuntime.mark(function callee$1$0() {
+                return regeneratorRuntime.wrap(function callee$1$0$(context$2$0) {
+                    while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        $ctx.next = 2;
+                        context$2$0.next = 2;
                         return timeout(1000).get();
                     case 2:
                         c1.send('process 1');
                     case 3:
                     case "end":
-                        return $ctx.stop();
+                        return context$2$0.stop();
                     }
-                }, this);
+                }, callee$1$0, this);
             }));
 
-            job(wrapGenerator.mark(function() {
-                return wrapGenerator(function($ctx) {
-                    while (1) switch ($ctx.next) {
+            go(regeneratorRuntime.mark(function callee$1$1() {
+                return regeneratorRuntime.wrap(function callee$1$1$(context$2$0) {
+                    while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        $ctx.next = 2;
+                        context$2$0.next = 2;
                         return timeout(2000).get();
                     case 2:
                         c2.send('process 2');
                     case 3:
                     case "end":
-                        return $ctx.stop();
+                        return context$2$0.stop();
                     }
-                }, this);
+                }, callee$1$1, this);
             }));
 
-            job(wrapGenerator.mark(function() {
-                return wrapGenerator(function($ctx) {
-                    while (1) switch ($ctx.next) {
+            go(regeneratorRuntime.mark(function callee$1$2() {
+                return regeneratorRuntime.wrap(function callee$1$2$(context$2$0) {
+                    while (1) switch (context$2$0.prev = context$2$0.next) {
                     case 0:
-                        $ctx.next = 2;
+                        context$2$0.next = 2;
                         return timeout(1500).get();
                     case 2:
                         c3.send('process 3');
                     case 3:
                     case "end":
-                        return $ctx.stop();
+                        return context$2$0.stop();
                     }
-                }, this);
+                }, callee$1$2, this);
             }));
 
-            $ctx.next = 7;
 
-            return select([ { pipe: c1, response: message },
-                           { pipe: c2, response: message },
-                           { pipe: c3, response: message } ]).get()
+            context$1$0.next = 7;
+
+            return select([ { chan: c1, response: message },
+                           { chan: c2, response: message },
+                           { chan: c3, response: message } ]).get();
         case 7:
             timetaken = Date.now() - start;
             message('Time taken: ' + timetaken + 'ms');
             message('Notice that total time taken is under 3s since the processes run in parallel.');
         case 10:
         case "end":
-            return $ctx.stop();
+            return context$1$0.stop();
         }
-    }, this);
-}
+    }, main, this);
+});
 
-JSPipe.job(main, [JSPipe.Pipe, JSPipe.job, JSPipe.timeout, JSPipe.select]);
-
+Routines.go(main, [Routines.Chan, Routines.go, Routines.timeout, Routines.select]);

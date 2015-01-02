@@ -40,47 +40,47 @@ function isGeneratorFunction(fn) {
  */
 
 /**
- * Run a generator function `fn` as a concurrent job.
+ * Run a generator function `fn` as a concurrent routine.
  *
  * ##### Example:
  * ```
- * var pipe = new JSPipe.Pipe();
+ * var chan = new Routines.Chan();
  *
- * JSPipe.job(function* () {
- *     pipe.send(1);
+ * Routines.go(function* () {
+ *     chan.send(1);
  * });
  *
- * JSPipe.job(function* () {
+ * Routines.go(function* () {
  *     while (true) {
- *         yield JSPipe.timeout(250).get();
- *         pipe.send(2);
+ *         yield Routines.timeout(250).get();
+ *         chan.send(2);
  *     }
  * });
  *
- * JSPipe.job(function* () {
+ * Routines.go(function* () {
  *    while (true) {
- *        yield JSPipe.timeout(400).get();
- *        pipe.send(3);
+ *        yield Routines.timeout(400).get();
+ *        chan.send(3);
  *    }
  * });
  *
- * JSPipe.job(function* () {
+ * Routines.go(function* () {
  *     var data;
- *     while (data = yield pipe.get()) {
+ *     while (data = yield chan.get()) {
  *         console.log(data);
  *     }
  * });
  * ```
  *
- * To communicate and synchronize between jobs, send data through a `Pipe`
+ * To communicate and synchronize between routines, send data through a `Chan`
  * using `put` (or `send`) and receive data using `get`.
  *
- * @param {Function} fn A generator function to execute as a concurrent job
+ * @param {Function} fn A generator function to execute as a concurrent routine
  * @param {Array} args Parameters to pass to `fn`
  * @api public
- * @function job
+ * @function go
  */
-function job(fn, args) {
+function go(fn, args) {
     var generator,
         next;
 
@@ -108,29 +108,29 @@ function job(fn, args) {
 
 /**
  * ---
- * # Communicating & synchronizing between jobs
+ * # Communicating & synchronizing between routines
  */
 
 /**
- * A pipe provides a way for two jobs to communicate data and synchronize their execution.
- * One job can send data into the pipe by calling `yield pipe.put(data)` or `pipe.send(data)`
- * and another job can receive data by calling `yield pipe.get()`.
+ * A channel provides a way for two routines to communicate data and synchronize their execution.
+ * One routine can send data into the channel by calling `yield chan.put(data)` or `chan.send(data)`
+ * and another routine can receive data by calling `yield chan.get()`.
  *
- * Once both a sender job and a receiver job are waiting on the pipe a rendezvous occurs,
- * transferring the data in the pipe to the receiver and consequently synchronizing the two
- * waiting jobs.
+ * Once both a sender routine and a receiver routine are waiting on the channel a rendezvous occurs,
+ * transferring the data in the channel to the receiver and consequently synchronizing the two
+ * waiting routines.
  *
- * Once synchronized, the two jobs continue execution.
+ * Once synchronized, the two routines continue execution.
  *
  * ##### Example:
  * ```
- * var pipe = new Pipe();
+ * var chan = new Chan();
  * ```
  *
- * @class Pipe
+ * @class Chan
  * @constructor
  */
-function Pipe() {
+function Chan() {
     this.syncing = false;
     this.inbox = [];
     this.outbox = [];
@@ -140,17 +140,17 @@ function Pipe() {
 (function(proto) {
 
     /**
-     * Closes the pipe and sets the `isOpen` flag to `false`.
+     * Closes the channel and sets the `isOpen` flag to `false`.
      *
-     * After a pipe is closed you can no longer send messages to it.
+     * After a channel is closed you can no longer send messages to it.
      * Methods like `put`, `pushItems`, and `send` will throw an exception.
      *
-     * @method Pipe.close
-     * @param {String} reason Optional. Provide a reason why the pipe is getting closed.
+     * @method Chan.close
+     * @param {String} reason Optional. Provide a reason why the channel is getting closed.
      */
     proto.close = function(reason) {
         var methods = ['put', 'pushItems', 'send'],
-            newMethodBody = function() { throw 'Pipe is closed'; },
+            newMethodBody = function() { throw 'Channel is closed'; },
             self = this;
         this.send({close: reason});
         this.isOpen = false;
@@ -166,21 +166,21 @@ function Pipe() {
     };
 
     /**
-     * Call `yield pipe.put(data)` from a job (the sender) to put data in the pipe.
+     * Call `yield chan.put(data)` from a routine (the sender) to put data in the channel.
      *
-     * The put method will then try to rendezvous with a receiver job, if any.
+     * The put method will then try to rendezvous with a receiver routine, if any.
      * If there is no receiver waiting for data, the sender will pause until another
-     * job calls `yield pipe.get()`, which will then trigger a rendezvous.
+     * routine calls `yield chan.get()`, which will then trigger a rendezvous.
      *
      * ##### Example
      * ```
-     * job(function* () {
-     *     yield pipe.put(42);
+     * go(function* () {
+     *     yield chan.put(42);
      * });
      * ```
      *
-     * @method Pipe.put
-     * @param {AnyType} data The data to put into the pipe.
+     * @method Chan.put
+     * @param {AnyType} data The data to put into the channel.
      */
     proto.put = function(data) {
         var self = this;
@@ -192,23 +192,23 @@ function Pipe() {
     };
 
     /**
-     * Puts the contents of `items` into the pipe.
+     * Puts the contents of `items` into the channel.
      *
-     * By default the pipe will be closed after the items are copied,
+     * By default the channel will be closed after the items are copied,
      * but can be determined by the optional `leaveOpen` parameter.
      *
-     * Returns a pipe which will close after the items are copied.
+     * Returns a channel which will close after the items are copied.
      *
      * ##### Example
      *
      * ```
-     * pipe.pushItems([1, 2, 3]);
+     * chan.pushItems([1, 2, 3]);
      *
-     * job(function* () {
+     * go(function* () {
      *     var msg,
      *         result = [];
      *
-     *     while (!(msg = yield pipe.get()).close) {
+     *     while (!(msg = yield chan.get()).close) {
      *         result.push(msg.data);
      *     }
      *
@@ -217,13 +217,13 @@ function Pipe() {
      * ```
      * Prints `[1, 2, 3]` to console.
      *
-     * @method Pipe.pushItems
-     * @param {Array} items The items to put in the pipe
-     * @param {Boolean} leaveOpen Optional. Control whether to leave pipe open or not
-     * @return {Pipe} A pipe that closes after the items are copied
+     * @method Chan.pushItems
+     * @param {Array} items The items to put in the channel
+     * @param {Boolean} leaveOpen Optional. Control whether to leave channel open or not
+     * @return {Chan} A channel that closes after the items are copied
      */
     proto.pushItems = function(items, leaveOpen) {
-        var output = new Pipe(),
+        var output = new Chan(),
             self = this;
 
         items.forEach(function(v) {
@@ -244,25 +244,25 @@ function Pipe() {
     };
 
     /**
-     * Call `yield pipe.get()` from a job (the receiver) to get data from the pipe.
+     * Call `yield chan.get()` from a routine (the receiver) to get data from the chan.
      *
-     * The get method will then try to rendezvous with a sender job, if any.
+     * The get method will then try to rendezvous with a sender routine, if any.
      * If there is no sender waiting for the data it sent to be delivered, the receiver will
-     * pause until another job calls `yield pipe.put(data)`, which will then trigger
+     * pause until another routine calls `yield chan.put(data)`, which will then trigger
      * a rendezvous.
      *
      * ##### Example:
      * ```
-     * job(function* () {
+     * go(function* () {
      *     var data;
-     *     while (data = yield pipe.get()) {
+     *     while (data = yield chan.get()) {
      *         console.log(data);
      *     }
      * });
      * ```
      *
-     * @method Pipe.get
-     * @return {AnyType} The data that was received from the pipe.
+     * @method Chan.get
+     * @return {AnyType} The data that was received from the channel.
      */
     proto.get = function() {
         var self = this;
@@ -279,21 +279,21 @@ function Pipe() {
      *
      * ##### Example:
      * ```
-     * pipe.send(42);
+     * chan.send(42);
      * ```
      *
-     * @method Pipe.send
-     * @param {AnyType} data The data to put in the pipe.
+     * @method Chan.send
+     * @param {AnyType} data The data to put in the chan.
      */
     proto.send = function(data) {
         this.put(data)();
     };
 
 
-    function rendezvous(pipe) {
-        var syncing = pipe.syncing,
-            inbox = pipe.inbox,
-            outbox = pipe.outbox,
+    function rendezvous(chan) {
+        var syncing = chan.syncing,
+            inbox = chan.inbox,
+            outbox = chan.outbox,
             data,
             notify,
             send,
@@ -302,19 +302,19 @@ function Pipe() {
             receiverWaiting;
 
         if (!syncing) {
-            pipe.syncing = true;
+            chan.syncing = true;
 
             while ((senderWaiting = inbox.length > 0) &&
                    (receiverWaiting = outbox.length > 0)) {
 
-                // Get the data that the sender job put in the pipe
+                // Get the data that the sender routine put in the channel
                 data = inbox.shift();
 
                 // Get the method to notify the sender once the data has been
-                // delivered to the receiver job
+                // delivered to the receiver routine
                 notify = inbox.shift();
 
-                // Get the method used to send the data to the receiver job.
+                // Get the method used to send the data to the receiver routine.
                 send = outbox.shift();
 
                 // Send the data
@@ -326,35 +326,35 @@ function Pipe() {
                 }
             }
 
-            pipe.syncing = false;
+            chan.syncing = false;
         }
     }
 
-})(Pipe.prototype);
+})(Chan.prototype);
 
 
 /**
- * An EventPipe is a pipe for delivering event data.
+ * An EventChan is a channel for delivering event data.
  *
  * ##### Example:
  *
  * ```
- * var pipe = new EventPipe(document, 'keydown', function(evt) {
- *     pipe.send(evt);
+ * var chan = new EventChan(document, 'keydown', function(evt) {
+ *     chan.send(evt);
  * });
  * ```
  *
- * Normally you should use the `listen` function to create an EventPipe instead.
+ * Normally you should use the `listen` function to create an EventChan instead.
  *
- * @class EventPipe
+ * @class EventChan
  * @constructor
  * @param {Object} el An object, such as an HTMLElement, that exposes an addEventListener method.
  * @param {String} type The name of the event, e.g. 'keydown'.
  * @param {Function} handler The function that is called when the event fires.
  */
-function EventPipe(el, type, handler) {
+function EventChan(el, type, handler) {
     // super
-    Pipe.call(this);
+    Chan.call(this);
 
     this._el = el;
     this._type = type;
@@ -362,53 +362,53 @@ function EventPipe(el, type, handler) {
     el.addEventListener(type, handler);
 }
 
-EventPipe.prototype = Object.create(Pipe.prototype);
+EventChan.prototype = Object.create(Chan.prototype);
 
 /**
- * Removes the event listener and closes the Pipe.
+ * Removes the event listener and closes the Chan.
  *
- * @method EventPipe.close
+ * @method EventChan.close
  */
-EventPipe.prototype.close = function() {
+EventChan.prototype.close = function() {
     this._el.removeEventListener(this._type, this._handler);
     delete this._el;
     delete this._type;
     delete this._handler;
     // super
-    Pipe.prototype.close.call(this);
+    Chan.prototype.close.call(this);
 };
 
 
 
 /**
  * ---
- * # Making pipes
+ * # Making channels
  */
 
 
 /**
  * NOTE: will probably get renamed to `pause`.
  *
- * Create a pipe that receives a value after a specified time. Use `timeout`
- * to pause a `job`. Other jobs get a chance to execute this job is paused.
+ * Create a channel that receives a value after a specified time. Use `timeout`
+ * to pause a `routine`. Other routiness get a chance to execute this routine is paused.
  *
  * ##### Example:
  *
  * ```
- * job(function* () {
+ * go(function* () {
  *     yield timeout(200).get();
  *     console.log('200ms elapsed');
  * });
  * ```
  *
  * @function timeout
- * @param {Number} ms The time to wait before a value is placed in the pipe
- * @return {Pipe} A pipe
+ * @param {Number} ms The time to wait before a value is placed in the channel
+ * @return {Chan} A channel
  */
 
 function timeout(ms) { // TODO: consider renaming to "pause"
     // TODO: model timeout as a process
-    var output = new Pipe();
+    var output = new Chan();
 
     setTimeout(function() {
         output.send(ms);
@@ -419,13 +419,13 @@ function timeout(ms) { // TODO: consider renaming to "pause"
 }
 
 /**
- * Create a `Pipe` that receives event data.
+ * Create a `Chan` that receives event data.
  *
  * ##### Example:
  *
  * ```
- * var pipe = listen(document, 'keydown');
- * var keydownEventData = yield pipe.get();
+ * var chan = listen(document, 'keydown');
+ * var keydownEventData = yield chan.get();
  * console.log(keydownEventData);
  * ```
  *
@@ -434,7 +434,7 @@ function timeout(ms) { // TODO: consider renaming to "pause"
  * @param {String} type The name of the event, e.g. 'keydown'
  * @param {Boolean} preventDefault Whether or not `.preventDefault()` should be called
  *                                 on the event data.
- * @return {Pipe} A pipe
+ * @return {Chan} A channel
  */
 
 function listen(el, type, preventDefault) {
@@ -445,23 +445,23 @@ function listen(el, type, preventDefault) {
         output.send(e);
     };
 
-    var output = new EventPipe(el, type, handler);
+    var output = new EventChan(el, type, handler);
     return output;
 }
 
 /**
- * Creates a pipe with `count` elements, each produced by executing the function `fn`.
+ * Creates a channel with `count` elements, each produced by executing the function `fn`.
  *
  * ##### Example:
  *
  * ```
- * var pipe = lazyseq(5, function(i) { return i * 10; });
+ * var chan = lazyseq(5, function(i) { return i * 10; });
  *
- * job(function* () {
+ * go(function* () {
  *     var msg,
  *         result = [];
  *
- *     while (!(data = yield pipe.get()).close) {
+ *     while (!(data = yield chan.get()).close) {
  *         result.push(msg.data);
  *     }
  *
@@ -476,8 +476,8 @@ function listen(el, type, preventDefault) {
  *                      with the element index
  */
 function lazyseq(count, fn) {
-    var output = new Pipe();
-    job(function* () {
+    var output = new Chan();
+    go(function* () {
         var data,
             i = 0;
         while (0 < count--) {
@@ -492,8 +492,8 @@ function lazyseq(count, fn) {
 }
 
 /**
- * Creates a `Pipe` that will get the data produced by a callback-invoking NodeJS
- * function. The pipe receives a `{data: ...}` or a `{err: ...}` message, and is
+ * Creates a `Chan` that will get the data produced by a callback-invoking NodeJS
+ * function. The channel receives a `{data: ...}` or a `{err: ...}` message, and is
  * then closed.
  *
  * Useful for converting callback style code into sequential code.
@@ -501,7 +501,7 @@ function lazyseq(count, fn) {
  * ##### Example:
  *
  * ```
- * job(function* () {
+ * go(function* () {
  *     var filedata = yield denode(fs.readFile, 'readme.txt');
  *     console.log(filedata);
  * });
@@ -512,44 +512,44 @@ function lazyseq(count, fn) {
  * @param {Array} args The arguments to supply to `fn`
  */
 function denode(fn, args) {
-    var pipe = new Pipe(),
+    var chan = new Chan(),
         newArgs = args instanceof Array ? args : [args];
 
     newArgs.push(function(err, data) {
         var result = err ? {err:err} : {data:data};
-        pipe.send(result);
-        pipe.close('denode');
+        chan.send(result);
+        chan.close('denode');
     });
 
     fn.apply(fn, newArgs);
-    return pipe;
+    return chan;
 }
 
 
 /**
  * ---
- * ## Transforming pipes
+ * ## Transforming channels
  */
 
 /**
- * Takes a pipe and produces a new pipe that only receives sequentially unique
+ * Takes a channel and produces a new channel that only receives sequentially unique
  * values.
  *
  * ##### Example:
  *
  * ```
- * var pipe1 = new Pipe(),
- *     pipe2 = unique(pipe1);
+ * var chan1 = new Chan(),
+ *     chan2 = unique(chan1);
  *
- * pipe1.send(1);
- * pipe1.send(1);
- * pipe1.send(3);
- * pipe1.send(1);
+ * chan1.send(1);
+ * chan1.send(1);
+ * chan1.send(3);
+ * chan1.send(1);
  *
- * job(function* () {
+ * go(function* () {
  *     var data,
  *         result = [];
- *     while (data = yield pipe2.get()) {
+ *     while (data = yield chan2.get()) {
  *         result.push(data);
  *     }
  *     console.log(result);
@@ -559,18 +559,18 @@ function denode(fn, args) {
  * Prints `[1, 3, 1]` to console.
  *
  * @function unique
- * @param {Pipe} pipe The pipe from which sequentially unique values must be produced
- * @return {Pipe} A Pipe
+ * @param {Chan} chan The channel from which sequentially unique values must be produced
+ * @return {Chan} A channel
  */
-function unique(pipe) {
-    var output = new Pipe();
+function unique(chan) {
+    var output = new Chan();
 
-    job(function* () {
+    go(function* () {
         var isFirstData = true,
             data,
             lastData;
 
-        while (!(data = yield pipe.get()).close) {
+        while (!(data = yield chan.get()).close) {
             if (isFirstData || data !== lastData) {
                 yield output.put(data);
                 isFirstData = false;
@@ -586,22 +586,22 @@ function unique(pipe) {
 }
 
 /**
- * Produces a new pipe that gets data from a source pipe at a given pace.
+ * Produces a new channel that gets data from a source channel at a given pace.
  *
  * @function pace
- * @param {Number} ms The time to wait before getting the next value from the source pipe
- * @param {Pipe} pipe The source pipe
- * @return {Pipe} A pipe
+ * @param {Number} ms The time to wait before getting the next value from the source channel
+ * @param {Chan} chan The source channel
+ * @return {Chan} A channel
  */
-function pace(ms, pipe) {
-    var output = new Pipe();
+function pace(ms, chan) {
+    var output = new Chan();
 
-    job(function* () {
+    go(function* () {
         var timeoutId,
             data,
             send = function(data) { output.send(data); };
 
-        while (!(data = yield pipe.get()).close) {
+        while (!(data = yield chan.get()).close) {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(send.bind(output, data), ms);
         }
@@ -616,28 +616,28 @@ function pace(ms, pipe) {
 
 
 ///
-/// Pipe coordination
+/// Channel coordination
 ///
 
 // TODO: revisit API
 function select(cases) {
     // TODO: consider rewriting as a sweetjs macro
-    var output = new Pipe(),
-        done = new Pipe(),
+    var output = new Chan(),
+        done = new Chan(),
         remaining = cases.length;
 
     cases.forEach(function(item) {
-        job(function* () {
-            var pipe = item.pipe,
+        go(function* () {
+            var chan = item.chan,
                 response = item.response,
                 data;
-            data = yield pipe.get();
+            data = yield chan.get();
             response(data);
             yield done.put(true);
         });
     });
 
-    job(function* () {
+    go(function* () {
         while (remaining > 0) {
             yield done.get();
             remaining = remaining - 1;
@@ -655,21 +655,21 @@ function range() {
 
 
 export {
-    job,
-    Pipe,
-    EventPipe,
+    go,
+    Chan,
+    EventChan,
 
-    // Pipe producers
+    // Channel producers
     timeout,
     listen,
     lazyseq,
     denode,
 
-    // Pipe transformers
+    // Channel transformers
     unique,
     pace,
 
-    // Pipe coordination
+    // Channel coordination
     sentinel,
     select,
     range

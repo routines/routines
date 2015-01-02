@@ -1,5 +1,5 @@
-function main(Pipe, job, timeout) {
-    var pipe = new Pipe(),
+function main(Chan, go, timeout) {
+    var chan = new Chan(),
         out = document.getElementById('out');
 
     function render(q) {
@@ -15,106 +15,106 @@ function main(Pipe, job, timeout) {
     }
 
     // Process 1
-    job(wrapGenerator.mark(function() {
-        return wrapGenerator(function($ctx) {
-            while (1) switch ($ctx.next) {
+    go(regeneratorRuntime.mark(function callee$1$0() {
+        return regeneratorRuntime.wrap(function callee$1$0$(context$2$0) {
+            while (1) switch (context$2$0.prev = context$2$0.next) {
             case 0:
-                $ctx.next = 2;
+                context$2$0.next = 2;
                 return timeout(250).get();
             case 2:
-                if (!$ctx.sent) {
-                    $ctx.next = 6;
+                if (!context$2$0.sent) {
+                    context$2$0.next = 6;
                     break;
                 }
 
-                pipe.send(1);
-                $ctx.next = 0;
+                chan.send(1);
+                context$2$0.next = 0;
                 break;
             case 6:
             case "end":
-                return $ctx.stop();
+                return context$2$0.stop();
             }
-        }, this);
+        }, callee$1$0, this);
     }));
 
     // Process 2
-    job(wrapGenerator.mark(function() {
-        return wrapGenerator(function($ctx) {
-            while (1) switch ($ctx.next) {
+    go(regeneratorRuntime.mark(function callee$1$1() {
+        return regeneratorRuntime.wrap(function callee$1$1$(context$2$0) {
+            while (1) switch (context$2$0.prev = context$2$0.next) {
             case 0:
-                $ctx.next = 2;
+                context$2$0.next = 2;
                 return timeout(1000).get();
             case 2:
-                if (!$ctx.sent) {
-                    $ctx.next = 6;
+                if (!context$2$0.sent) {
+                    context$2$0.next = 6;
                     break;
                 }
 
-                pipe.send(2);
-                $ctx.next = 0;
+                chan.send(2);
+                context$2$0.next = 0;
                 break;
             case 6:
             case "end":
-                return $ctx.stop();
+                return context$2$0.stop();
             }
-        }, this);
+        }, callee$1$1, this);
     }));
 
-    
+
     // Process 3
-    job(wrapGenerator.mark(function() {
-        return wrapGenerator(function($ctx) {
-            while (1) switch ($ctx.next) {
+    go(regeneratorRuntime.mark(function callee$1$2() {
+        return regeneratorRuntime.wrap(function callee$1$2$(context$2$0) {
+            while (1) switch (context$2$0.prev = context$2$0.next) {
             case 0:
-                $ctx.next = 2;
+                context$2$0.next = 2;
                 return timeout(1500).get();
             case 2:
-                if (!$ctx.sent) {
-                    $ctx.next = 6;
+                if (!context$2$0.sent) {
+                    context$2$0.next = 6;
                     break;
                 }
 
-                pipe.send(3);
-                $ctx.next = 0;
+                chan.send(3);
+                context$2$0.next = 0;
                 break;
             case 6:
             case "end":
-                return $ctx.stop();
+                return context$2$0.stop();
             }
-        }, this);
+        }, callee$1$2, this);
     }));
 
 
     // Render 10 most recent items from the 3 simultaneous processes
-    job(wrapGenerator.mark(function() {
+    go(regeneratorRuntime.mark(function callee$1$3() {
         var data, newItem;
 
-        return wrapGenerator(function($ctx) {
-            while (1) switch ($ctx.next) {
+        return regeneratorRuntime.wrap(function callee$1$3$(context$2$0) {
+            while (1) switch (context$2$0.prev = context$2$0.next) {
             case 0:
                 data = [];
             case 1:
-                $ctx.next = 3;
-                return pipe.get();
+                context$2$0.next = 3;
+                return chan.get();
             case 3:
-                if (!(newItem = $ctx.sent)) {
-                    $ctx.next = 9;
+                if (!(newItem = context$2$0.sent)) {
+                    context$2$0.next = 9;
                     break;
                 }
 
                 out.innerHTML = render(data);
                 data.push(newItem);
                 data = peekn(data, 10);
-                $ctx.next = 1;
+                context$2$0.next = 1;
                 break;
             case 9:
             case "end":
-                return $ctx.stop();
+                return context$2$0.stop();
             }
-        }, this);
+        }, callee$1$3, this);
     }));
 
 }
 
 
-main(JSPipe.Pipe, JSPipe.job, JSPipe.timeout);
+main(Routines.Chan, Routines.go, Routines.timeout);

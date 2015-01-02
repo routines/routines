@@ -1,18 +1,18 @@
-function main(Pipe, job, timeout, lazyseq, sentinel) {
+function main(Chan, go, timeout, lazyseq, sentinel) {
 
-    job(function* () {
+    go(function* () {
 
-        var sorted = new Pipe(),
-            log = new Pipe(),
-            numbers = new Pipe(),
+        var sorted = new Chan(),
+            log = new Chan(),
+            numbers = new Chan(),
             randomNumber = function(index) { return Math.random(); },
             sortResult,
             sortedNumbers,
             sortTime;
 
-        job(printLogMessages);
-        job(receiveNumbers, [lazyseq(100000, randomNumber)]);
-        job(sortNumbers);
+        go(printLogMessages);
+        go(receiveNumbers, [lazyseq(100000, randomNumber)]);
+        go(sortNumbers);
 
         sortResult = yield sorted.get();
         sortedNumbers = sortResult.numbers;
@@ -21,25 +21,25 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
         log.send('sort complete. took ' + sortTime + 'ms for ' + sortedNumbers.length + ' items.');
         log.send('first: ' + sortedNumbers[0]);
         log.send('last: ' + sortedNumbers[sortedNumbers.length-1]);
-        
-        
+
+
         ///
-        /// Jobs
+        /// Routines
         ///
 
 
         function* printLogMessages() {
             var text, p,
                 logDiv = document.getElementById('log');
-            
-            while (text = yield log.get()) {                
+
+            while (text = yield log.get()) {
                 p = document.createElement('p');
                 p.innerHTML = text;
-                logDiv.appendChild(p);            
+                logDiv.appendChild(p);
             }
         }
 
-        function* receiveNumbers(pipe) {
+        function* receiveNumbers(chan) {
             var all = false,
                 nums = [],
                 start = Date.now(),
@@ -47,9 +47,9 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
 
             // TODO: this while loop is the logic
             // for Range syntax; implement it using sweetjs
-            // and make part of core JS/Pipe.
+            // and make part of core Routines.
             while (!all) {
-                n = yield pipe.get();
+                n = yield chan.get();
                 if (n === sentinel) {
                     all = true;
                 } else {
@@ -58,7 +58,7 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
             }
 
             log.send('took ' + (Date.now() - start) + 'ms to receive ' + nums.length + ' random numbers');
-            
+
             yield numbers.put(nums);
         }
 
@@ -79,7 +79,4 @@ function main(Pipe, job, timeout, lazyseq, sentinel) {
 
 };
 
-main(JSPipe.Pipe, JSPipe.job, JSPipe.timeout, JSPipe.lazyseq, JSPipe.sentinel);
-
-
-
+main(Routines.Chan, Routines.go, Routines.timeout, Routines.lazyseq, Routines.sentinel);

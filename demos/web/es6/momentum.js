@@ -1,11 +1,11 @@
-function main(job, Pipe, listen) {
+function main(go, Chan, listen) {
     var ball = document.getElementById('ball'),
         ballWidth = ball.clientWidth,
         ballHeight = ball.clientHeight,
         pointerIsDown = false,
-        touchmovePipe = listen(document, 'touchmove', true),
-        pointermovePipe = new Pipe(),
-        throwPipe = new Pipe(),
+        touchmoveChan = listen(document, 'touchmove', true),
+        pointermoveChan = new Chan(),
+        throwChan = new Chan(),
         timeSpaceSamples = [],
         sampleSize = 4,
         throwDistance = 100,
@@ -15,11 +15,11 @@ function main(job, Pipe, listen) {
 
     function* draggingBall() {
         var evt, x, y;
-        while (evt = yield pointermovePipe.get()) {
+        while (evt = yield pointermoveChan.get()) {
 
             x = evt.clientX - pointerPositionInBall.x;
             y = evt.clientY - pointerPositionInBall.y;
-            
+
             timeSpaceSamples.push({ time: Date.now(),
                                     x: x,
                                     y: y });
@@ -28,25 +28,25 @@ function main(job, Pipe, listen) {
                 timeSpaceSamples.shift();
             }
 
-            placeBall(x, y);            
+            placeBall(x, y);
         }
     }
 
     function* throwingBall() {
         var velocity,
             x, y;
-        
-        while (velocity = yield throwPipe.get()) {
+
+        while (velocity = yield throwChan.get()) {
             x = currentPosition.x + velocity.x * throwDistance;
             y = currentPosition.y + velocity.y * throwDistance;
 
-            
+
             placeBall(x, y, 900, 'cubic-bezier(0.19, 1, 0.22, 1)');
         }
     }
 
     function* bouncingBall() {
-        
+
     }
 
 
@@ -62,14 +62,14 @@ function main(job, Pipe, listen) {
 
             ball.style.webkitTransitionDuration = duration || 16;
             ball.style.webkitTransitionTimingFunction = ease || 'ease-out';
-        
-            ball.style.webkitTransform = 
-                'translateX(' + (x) + 
+
+            ball.style.webkitTransform =
+                'translateX(' + (x) +
                 'px) translateY(' + (y) + 'px)';
-        
+
             currentPosition = { x: x, y: y };
         }
-        
+
     }
 
 
@@ -97,10 +97,10 @@ function main(job, Pipe, listen) {
 
     function* touchmoving() {
         var evt, touch;
-        while (evt = yield touchmovePipe.get()) {
+        while (evt = yield touchmoveChan.get()) {
             touch = evt.touches[0];
             if (touch.target === ball) {
-                pointermovePipe.send(touch);
+                pointermoveChan.send(touch);
             }
         }
     }
@@ -115,13 +115,13 @@ function main(job, Pipe, listen) {
         while (evt = yield touchend.get()) {
             if (pointerIsDown) {
                 pointerIsDown = false;
-                
+
                 oldestSample = timeSpaceSamples[0];
                 newestSample = timeSpaceSamples[timeSpaceSamples.length - 1];
                 duration = newestSample.time - oldestSample.time;
                 xDirection = (newestSample.x - oldestSample.x) < 0 ? -1 : 1;
                 yDirection = (newestSample.y - oldestSample.y) < 0 ? -1 : 1;
-                
+
                 velocity = {
                     x: (newestSample.x - oldestSample.x) / (duration/2),
                     y: (newestSample.y - oldestSample.y) / (duration/2),
@@ -129,20 +129,20 @@ function main(job, Pipe, listen) {
                     yDirection: yDirection
                 };
 
-                throwPipe.send(velocity);
+                throwChan.send(velocity);
             }
         }
     }
 
-    job(draggingBall);
-    job(throwingBall);
-    job(bouncingBall);
-    
-    job(touchmoving);
-    job(startingTouchOnBall);
-    job(endingTouch);
+    go(draggingBall);
+    go(throwingBall);
+    go(bouncingBall);
+
+    go(touchmoving);
+    go(startingTouchOnBall);
+    go(endingTouch);
 
 }
 
 
-main(JSPipe.job, JSPipe.Pipe, JSPipe.listen);
+main(Routines.go, Routines.Chan, Routines.listen);
